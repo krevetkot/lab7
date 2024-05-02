@@ -41,6 +41,12 @@ public class Server {
         logger.info("Создание DatagramPacket.");
         DatagramPacket datagramPacket = new DatagramPacket(buffer, buffer.length, datagramSocket.getInetAddress(), PORT);
         while (true) {
+
+            ClientHandler clientHandler = new ClientHandler();
+
+
+
+
             Response response = null;
             try {
                 logger.info("Чтение запроса.");
@@ -58,9 +64,9 @@ public class Server {
         }
     }
 
-    public void sendResponse(Response response, SocketAddress address) throws IOException {
+    public void sendResponse(Response response, SocketAddress address){
         try {
-            Header header = new Header(0, 0);
+            Header header = new Header(0, 0, null);
             int headerLength = serializer.serialize(header).length + 200;
 
             byte[] buffer = serializer.serialize(response);
@@ -70,7 +76,7 @@ public class Server {
                 countOfPieces += 1;
             }
             for (int i=0; i<countOfPieces; i++){
-                header = new Header(countOfPieces, i);
+                header = new Header(countOfPieces, i, null);
                 headerLength = serializer.serialize(header).length + 200;
                 Packet packet = new Packet(header, Arrays.copyOfRange(buffer, i*(BUFFER_LENGTH-headerLength), Math.min(bufferLength, (i+1)*(BUFFER_LENGTH-headerLength)) ));
 
@@ -82,7 +88,7 @@ public class Server {
 
         }
         catch (IOException | InterruptedException e){
-            System.out.println(e.getMessage());
+            logger.error(e.getMessage());
         }
     }
 
@@ -114,7 +120,7 @@ public class Server {
             }
             return serializer.deserialize(byteStream.toByteArray());
         } catch (Exception e){
-            System.out.println(e.getMessage());
+            logger.error(e.getMessage());
             return null;
         }
     }
