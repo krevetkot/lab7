@@ -1,5 +1,7 @@
 package labs.secondSemester.server;
 
+import labs.secondSemester.commons.commands.Command;
+import labs.secondSemester.commons.exceptions.IllegalValueException;
 import labs.secondSemester.commons.network.Header;
 import labs.secondSemester.commons.network.Packet;
 import labs.secondSemester.commons.network.Response;
@@ -26,7 +28,7 @@ public class ClientHandler implements Runnable{
     private final DatagramSocket datagramSocket;
     private final Serializer serializer;
     private final RuntimeManager runtimeManager;
-    private final int BUFFER_LENGTH = 1000;
+    private final int BUFFER_LENGTH = 10240;
     private final ExecutorService fixedPool = Executors.newFixedThreadPool(10);
     private static final Logger logger = LogManager.getLogger();
 
@@ -44,30 +46,41 @@ public class ClientHandler implements Runnable{
     public void run() {
         while (true) {
             try {
-                var request = receiveThenDeserialize(clientChannel);
+                byte[] buffer = new byte[BUFFER_LENGTH];
+                DatagramPacket datagramPacket = new DatagramPacket(buffer, buffer.length, datagramSocket.getInetAddress(), PORT);
+                Command command = readRequest(datagramPacket, buffer);
+
 
                 fixedPool.execute(() -> {
-                    var command = Environment.getAvailableCommands().get(request.getCommandName());
-                    var response = command.accept(commandInvoker, request);
+                    Response response = null;
+                    try {
+                        response = runtimeManager.commandProcessing(command, false, null);
+                    } catch (IllegalValueException e) {
+                        System.out.println(e.getMessage());
+                    }
 
-                    forkJoinPool.execute(() -> sendResponse(response));
+                    Response finalResponse = response;
+                    forkJoinPool.execute(() -> {
+                        try {
+                            sendResponse(finalResponse, datagramPacket.getSocketAddress());
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
                 });
-            } catch (EOFException ignored) {
-            } catch (SocketException e) {
-                logger.info("Client disconnected");
-                return;
-            } catch (IOException | ClassNotFoundException e) {
+            } catch (Exception e) {
                 logger.error("thread: " + Thread.currentThread().getName() + ":" + e.getMessage());
                 return;
             }
         }
     }
 
-    public void sendResponce(Response response, SocketAddress address) throws IOException {
+    public void sendResponse(Response response, SocketAddress address) throws IOException {
         byte[] array = serializer.serialize(response);
         DatagramPacket datagramPacket2 = new DatagramPacket(array, array.length, address);
         datagramSocket.send(datagramPacket2);
     }
+
     public <T> T readRequest(DatagramPacket datagramPacket, byte[] buffer) throws IOException {
         datagramSocket.receive(datagramPacket);
         return serializer.deserialize(buffer);
