@@ -28,7 +28,7 @@ public class Client {
     private final Serializer serializer;
     private final FileManager fileManager;
     private final String ip;
-    private final int BUFFER_LENGTH = 1000;
+    private final int BUFFER_LENGTH = 10000;
     private ClientIdentification clientID;
 
     {

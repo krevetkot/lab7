@@ -38,8 +38,9 @@ public class ClientHandler implements Runnable{
         runtimeManager = new RuntimeManager();
     }
 
-    public ClientHandler() throws SocketException {
-        datagramSocket = new DatagramSocket(PORT);
+    public ClientHandler(DatagramSocket socket) throws SocketException {
+//        datagramSocket = new DatagramSocket(PORT);
+        datagramSocket = socket;
     }
 
     @Override
@@ -51,7 +52,7 @@ public class ClientHandler implements Runnable{
                 Command command = readRequest(datagramPacket, buffer);
 
 
-                fixedPool.execute(() -> {
+//                fixedPool.execute(() -> {
                     Response response = null;
                     try {
                         response = runtimeManager.commandProcessing(command, false, null);
@@ -60,14 +61,14 @@ public class ClientHandler implements Runnable{
                     }
 
                     Response finalResponse = response;
-                    forkJoinPool.execute(() -> {
+//                    forkJoinPool.execute(() -> {
                         try {
                             sendResponse(finalResponse, datagramPacket.getSocketAddress());
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
-                    });
-                });
+//                    });
+//                });
             } catch (Exception e) {
                 logger.error("thread: " + Thread.currentThread().getName() + ":" + e.getMessage());
                 return;

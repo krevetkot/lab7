@@ -40,13 +40,15 @@ public class Server {
         byte[] buffer = new byte[BUFFER_LENGTH];
         logger.info("Создание DatagramPacket.");
         DatagramPacket datagramPacket = new DatagramPacket(buffer, buffer.length, datagramSocket.getInetAddress(), PORT);
+
+//        DatagramSocket datagramSocket = new DatagramSocket(PORT);
+
         while (true) {
 
-            ClientHandler clientHandler = new ClientHandler();
+            new Thread(new ClientHandler(this.datagramSocket)).start();
 
 
-
-
+/*
             Response response = null;
             try {
                 logger.info("Чтение запроса.");
@@ -61,7 +63,11 @@ public class Server {
                 logger.info("Отправка ответа.");
                 sendResponse(response, datagramPacket.getSocketAddress());
             }
+
+ */
         }
+
+
     }
 
     public void sendResponse(Response response, SocketAddress address){
@@ -99,6 +105,11 @@ public class Server {
         Header header = packet.getHeader();
         int countOfPieces = header.getCount();
         ArrayList<Packet> list = new ArrayList<>(countOfPieces);
+
+        for (int i = 0; i < countOfPieces; i++) {
+            list.add(null);
+        }
+
         list.add(header.getNumber(), packet);
         int k = 1;
 
