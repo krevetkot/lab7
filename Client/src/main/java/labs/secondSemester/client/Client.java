@@ -51,15 +51,16 @@ public class Client {
         ByteBuffer buffer = ByteBuffer.allocate(BUFFER_LENGTH);
 
         CommandFactory commandFactory = new CommandFactory();
+
+        String request = null;
+        Scanner scanner = new Scanner(System.in);
+        clientID = new ClientIdentification("Kseniya", "111");
+//            singIn(scanner);
+        //нужна какая-то проверка, что такой чел есть, но ее позже
+        System.out.println(clientID.getLogin() +
+                ", приветствуем Вас в приложении по управлению коллекцией! Введите 'help' для вывода доступных команд.");
+
         while (true) {
-
-            String request = null;
-            Scanner scanner = new Scanner(System.in);
-            singIn(scanner);
-            //нужна какая-то проверка, что такой чел есть, но ее позже
-            System.out.println(clientID.getLogin() +
-                    ", приветствуем Вас в приложении по управлению коллекцией! Введите 'help' для вывода доступных команд.");
-
             try {
                 request = scanner.nextLine();
             } catch (NoSuchElementException e1) {

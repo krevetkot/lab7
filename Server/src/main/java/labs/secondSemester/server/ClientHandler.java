@@ -52,7 +52,7 @@ public class ClientHandler implements Runnable{
                 Command command = readRequest(datagramPacket, buffer);
 
 
-//                fixedPool.execute(() -> {
+                fixedPool.execute(() -> {
                     Response response = null;
                     try {
                         response = runtimeManager.commandProcessing(command, false, null);
@@ -61,14 +61,14 @@ public class ClientHandler implements Runnable{
                     }
 
                     Response finalResponse = response;
-//                    forkJoinPool.execute(() -> {
+                    forkJoinPool.execute(() -> {
                         try {
                             sendResponse(finalResponse, datagramPacket.getSocketAddress());
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
-//                    });
-//                });
+                    });
+                });
             } catch (Exception e) {
                 logger.error("thread: " + Thread.currentThread().getName() + ":" + e.getMessage());
                 return;
@@ -77,13 +77,67 @@ public class ClientHandler implements Runnable{
     }
 
     public void sendResponse(Response response, SocketAddress address) throws IOException {
-        byte[] array = serializer.serialize(response);
-        DatagramPacket datagramPacket2 = new DatagramPacket(array, array.length, address);
-        datagramSocket.send(datagramPacket2);
+        try {
+            Header header = new Header(0, 0, null);
+            int headerLength = serializer.serialize(header).length + 200;
+
+            byte[] buffer = serializer.serialize(response);
+            int bufferLength = buffer.length;
+            int countOfPieces = bufferLength/(BUFFER_LENGTH-headerLength);
+            if (countOfPieces*(BUFFER_LENGTH-headerLength) < bufferLength){
+                countOfPieces += 1;
+            }
+            for (int i=0; i<countOfPieces; i++){
+                header = new Header(countOfPieces, i, null);
+                headerLength = serializer.serialize(header).length + 200;
+                Packet packet = new Packet(header, Arrays.copyOfRange(buffer, i*(BUFFER_LENGTH-headerLength), Math.min(bufferLength, (i+1)*(BUFFER_LENGTH-headerLength)) ));
+
+                byte[] array = serializer.serialize(packet);
+                DatagramPacket datagramPacket2 = new DatagramPacket(array, array.length, address);
+                datagramSocket.send(datagramPacket2);
+                Thread.sleep(100);
+            }
+
+        }
+        catch (IOException | InterruptedException e){
+            logger.error(e.getMessage());
+        }
     }
 
     public <T> T readRequest(DatagramPacket datagramPacket, byte[] buffer) throws IOException {
         datagramSocket.receive(datagramPacket);
-        return serializer.deserialize(buffer);
+        Packet packet = serializer.deserialize(buffer);
+        Header header = packet.getHeader();
+        int countOfPieces = header.getCount();
+        ArrayList<Packet> list = new ArrayList<>(countOfPieces);
+
+        for (int i = 0; i < countOfPieces; i++) {
+            list.add(null);
+        }
+
+        list.add(header.getNumber(), packet);
+        int k = 1;
+
+        while (k<countOfPieces){
+            datagramSocket.receive(datagramPacket);
+            Packet newPacket = serializer.deserialize(buffer);
+            Header newHeader = newPacket.getHeader();
+            list.add(newHeader.getNumber(), newPacket);
+            k += 1;
+        }
+
+        int buffLength = 0;
+        for (int i = 0; i < countOfPieces; i++) {
+            buffLength += list.get(i).getPieceOfBuffer().length;
+        }
+        try (ByteArrayOutputStream byteStream = new ByteArrayOutputStream(buffLength)) {
+            for (int i = 0; i < countOfPieces; i++) {
+                byteStream.write(list.get(i).getPieceOfBuffer());
+            }
+            return serializer.deserialize(byteStream.toByteArray());
+        } catch (Exception e){
+            logger.error(e.getMessage());
+            return null;
+        }
     }
 }
