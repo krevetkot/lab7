@@ -60,7 +60,6 @@ public class Server {
             new Thread(new ClientHandler(this.datagramSocket)).start();
         }
 
-
     }
 
     public void BDConnect(){
@@ -78,6 +77,7 @@ public class Server {
 
         logger.info("Создание менеджера базы данных.");
         databaseManager = new DatabaseManager(login, password);
+        databaseManager.connect();
     }
 
 //    public void sendResponse(Response response, SocketAddress address){
