@@ -1,5 +1,8 @@
 package labs.secondSemester.server;
 
+import labs.secondSemester.commons.exceptions.FailedBuildingException;
+import labs.secondSemester.commons.managers.CollectionManager;
+import labs.secondSemester.commons.managers.Validator;
 import labs.secondSemester.commons.objects.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -7,6 +10,7 @@ import org.apache.logging.log4j.Logger;
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class DatabaseManager {
     private String URL = "jdbc:postgresql://localhost:2225/studs";
@@ -31,7 +35,7 @@ public class DatabaseManager {
         }
     }
 
-    public void loadCollection() throws SQLException {
+    public void loadCollection() throws SQLException, FailedBuildingException {
         ArrayList<Dragon> collection = new ArrayList<>();
         String join = "select * from dragon " +
                 "join person on (dragon.killer = person.person_id) " +
@@ -39,11 +43,42 @@ public class DatabaseManager {
         PreparedStatement joinStatement = connection.prepareStatement(join);
         ResultSet result = joinStatement.executeQuery();
         while (result.next()){
-
+            Dragon newDragon = parse(result);
+            collection.add(newDragon);
         }
+        CollectionManager.getCollection().addAll(collection);
+        Collections.sort(collection);
     }
 
-    public Dragon parse(ResultSet result) throws SQLException {
+    public void saveCollection(){
+
+    }
+
+    public int addCoordinates(Coordinates coords) throws SQLException {
+        PreparedStatement addStatement = connection.prepareStatement("insert into coordinates(x, y) values (?, ?)");
+        addStatement.setLong(1, coords.getX());
+        addStatement.setFloat(2, coords.getY());
+        addStatement.executeUpdate();
+        ResultSet res = addStatement.executeQuery();
+        res.next();
+        return res.getInt("id");
+    }
+
+    public int addPerson(Person person) throws SQLException {
+        PreparedStatement addStatement = connection.prepareStatement("insert into person (person_name, passport_id, eye_color, hair_color, nationality, countKilledDragons) values (?, ?, ?, ?, ?, ?)");
+        addStatement.setString(1, person.getName());
+        addStatement.setString(2, person.getPassportID());
+        addStatement.setString(3, String.valueOf(person.getEyeColor()));
+        addStatement.setString(4, String.valueOf(person.getHairColor()));
+        addStatement.setString(5, String.valueOf(person.getNationality()));
+        addStatement.setLong(3, person.getCountKilledDragons());
+        addStatement.executeUpdate();
+        ResultSet res = addStatement.executeQuery();
+        res.next();
+        return res.getInt("id");
+    }
+
+    public Dragon parse(ResultSet result) throws SQLException, FailedBuildingException {
         int dragonId = result.getInt("dragon_id");
         String dragonName = result.getString("dragon_name");
         LocalDate creationDate = result.getDate("creation_date").toLocalDate();
@@ -55,7 +90,7 @@ public class DatabaseManager {
         long x = result.getLong("x");
         float y = result.getFloat("y");
 
-        if (result.getInt("person_id"))
+        //сделать адекватную обработку когда в персоне нул
 
         String personName = result.getString("person_name");
         String passportId = result.getString("passport_id");
@@ -66,6 +101,10 @@ public class DatabaseManager {
 
         Coordinates coords = new Coordinates(x, y);
         Person person = new Person(personName, passportId, eyeColor, hairColor, nationality, countKilledDragons);
-        Dragon dragon =
+        Dragon dragon = new Dragon(dragonId, dragonName, coords, creationDate, age, weight, speaking, type, person);
+        if (!Validator.dragonValidation(dragon)) {
+            throw new FailedBuildingException("Недопустимое значение в поле!", Dragon.class);
+        }
+        return dragon;
     }
 }
