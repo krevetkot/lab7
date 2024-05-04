@@ -4,14 +4,20 @@ import jakarta.xml.bind.JAXBException;
 import labs.secondSemester.commons.exceptions.FailedBuildingException;
 import labs.secondSemester.commons.managers.CollectionManager;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
 
+
+
+
         if (args.length == 0) {
             System.out.println("Вы не указали имя файла. Запуск невозможен.");
-            System.exit(1);
+            System.exit(-1);
         }
         String filename = args[0];
 

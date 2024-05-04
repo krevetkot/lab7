@@ -8,7 +8,11 @@ import labs.secondSemester.commons.network.Response;
 import labs.secondSemester.commons.network.Serializer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import javax.xml.crypto.Data;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -16,6 +20,7 @@ import java.net.SocketAddress;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Scanner;
 
 public class Server {
     private final int PORT = 2224;
@@ -23,6 +28,7 @@ public class Server {
     private final Serializer serializer;
     private final RuntimeManager runtimeManager;
     private final int BUFFER_LENGTH = 1000;
+    private DatabaseManager databaseManager;
 
     private static final Logger logger = LogManager.getLogger(Server.class);
 
@@ -37,102 +43,106 @@ public class Server {
 
     public void start() throws IOException {
         logger.info("Запуск сервера.");
-        byte[] buffer = new byte[BUFFER_LENGTH];
-        logger.info("Создание DatagramPacket.");
-        DatagramPacket datagramPacket = new DatagramPacket(buffer, buffer.length, datagramSocket.getInetAddress(), PORT);
 
-//        DatagramSocket datagramSocket = new DatagramSocket(PORT);
+        try {
+            Class.forName("org.postgresql.Driver");
+        } catch (ClassNotFoundException e) {
+            logger.error("Проблемы с драйвером. Ошибка: " + e.getMessage());
+            logger.error("Завершение работы.");
+            System.exit(-1);
+        }
+
+        BDConnect();
+
+
 
         while (true) {
-
             new Thread(new ClientHandler(this.datagramSocket)).start();
-
-
-/*
-            Response response = null;
-            try {
-                logger.info("Чтение запроса.");
-                Command command = readRequest(datagramPacket, buffer);
-
-                logger.info("Обработка команды и выполнение.");
-                response = runtimeManager.commandProcessing(command, false, null);
-            } catch (IllegalValueException | ArrayIndexOutOfBoundsException | NumberFormatException e) {
-                response = new Response(e.getMessage());
-                logger.error(e.getMessage());
-            } finally {
-                logger.info("Отправка ответа.");
-                sendResponse(response, datagramPacket.getSocketAddress());
-            }
-
- */
         }
 
 
     }
 
-    public void sendResponse(Response response, SocketAddress address){
+    public void BDConnect(){
+        logger.info("Получение логина и пароля для входа в БД.");
+        String login = null, password = null;
         try {
-            Header header = new Header(0, 0, null);
-            int headerLength = serializer.serialize(header).length + 200;
-
-            byte[] buffer = serializer.serialize(response);
-            int bufferLength = buffer.length;
-            int countOfPieces = bufferLength/(BUFFER_LENGTH-headerLength);
-            if (countOfPieces*(BUFFER_LENGTH-headerLength) < bufferLength){
-                countOfPieces += 1;
-            }
-            for (int i=0; i<countOfPieces; i++){
-                header = new Header(countOfPieces, i, null);
-                headerLength = serializer.serialize(header).length + 200;
-                Packet packet = new Packet(header, Arrays.copyOfRange(buffer, i*(BUFFER_LENGTH-headerLength), Math.min(bufferLength, (i+1)*(BUFFER_LENGTH-headerLength)) ));
-
-                byte[] array = serializer.serialize(packet);
-                DatagramPacket datagramPacket2 = new DatagramPacket(array, array.length, address);
-                datagramSocket.send(datagramPacket2);
-                Thread.sleep(100);
-            }
-
+            Scanner signInScanner = new Scanner(new File("BDCredentials.txt"));
+            login = signInScanner.nextLine().trim();
+            password = signInScanner.nextLine().trim();
+        } catch (FileNotFoundException e) {
+            logger.error("Проблема с входными данными для подключения к БД. Ошибка: " + e.getMessage());
+            logger.error("Завершение работы.");
+            System.exit(-1);
         }
-        catch (IOException | InterruptedException e){
-            logger.error(e.getMessage());
-        }
+
+        logger.info("Создание менеджера базы данных.");
+        databaseManager = new DatabaseManager(login, password);
     }
 
-
-    public <T> T readRequest(DatagramPacket datagramPacket, byte[] buffer) throws IOException {
-        datagramSocket.receive(datagramPacket);
-        Packet packet = serializer.deserialize(buffer);
-        Header header = packet.getHeader();
-        int countOfPieces = header.getCount();
-        ArrayList<Packet> list = new ArrayList<>(countOfPieces);
-
-        for (int i = 0; i < countOfPieces; i++) {
-            list.add(null);
-        }
-
-        list.add(header.getNumber(), packet);
-        int k = 1;
-
-        while (k<countOfPieces){
-            datagramSocket.receive(datagramPacket);
-            Packet newPacket = serializer.deserialize(buffer);
-            Header newHeader = newPacket.getHeader();
-            list.add(newHeader.getNumber(), newPacket);
-            k += 1;
-        }
-
-        int buffLength = 0;
-        for (int i = 0; i < countOfPieces; i++) {
-            buffLength += list.get(i).getPieceOfBuffer().length;
-        }
-        try (ByteArrayOutputStream byteStream = new ByteArrayOutputStream(buffLength)) {
-            for (int i = 0; i < countOfPieces; i++) {
-                byteStream.write(list.get(i).getPieceOfBuffer());
-            }
-            return serializer.deserialize(byteStream.toByteArray());
-        } catch (Exception e){
-            logger.error(e.getMessage());
-            return null;
-        }
-    }
+//    public void sendResponse(Response response, SocketAddress address){
+//        try {
+//            Header header = new Header(0, 0, null);
+//            int headerLength = serializer.serialize(header).length + 200;
+//
+//            byte[] buffer = serializer.serialize(response);
+//            int bufferLength = buffer.length;
+//            int countOfPieces = bufferLength/(BUFFER_LENGTH-headerLength);
+//            if (countOfPieces*(BUFFER_LENGTH-headerLength) < bufferLength){
+//                countOfPieces += 1;
+//            }
+//            for (int i=0; i<countOfPieces; i++){
+//                header = new Header(countOfPieces, i, null);
+//                headerLength = serializer.serialize(header).length + 200;
+//                Packet packet = new Packet(header, Arrays.copyOfRange(buffer, i*(BUFFER_LENGTH-headerLength), Math.min(bufferLength, (i+1)*(BUFFER_LENGTH-headerLength)) ));
+//
+//                byte[] array = serializer.serialize(packet);
+//                DatagramPacket datagramPacket2 = new DatagramPacket(array, array.length, address);
+//                datagramSocket.send(datagramPacket2);
+//                Thread.sleep(100);
+//            }
+//
+//        }
+//        catch (IOException | InterruptedException e){
+//            logger.error(e.getMessage());
+//        }
+//    }
+//
+//
+//    public <T> T readRequest(DatagramPacket datagramPacket, byte[] buffer) throws IOException {
+//        datagramSocket.receive(datagramPacket);
+//        Packet packet = serializer.deserialize(buffer);
+//        Header header = packet.getHeader();
+//        int countOfPieces = header.getCount();
+//        ArrayList<Packet> list = new ArrayList<>(countOfPieces);
+//
+//        for (int i = 0; i < countOfPieces; i++) {
+//            list.add(null);
+//        }
+//
+//        list.add(header.getNumber(), packet);
+//        int k = 1;
+//
+//        while (k<countOfPieces){
+//            datagramSocket.receive(datagramPacket);
+//            Packet newPacket = serializer.deserialize(buffer);
+//            Header newHeader = newPacket.getHeader();
+//            list.add(newHeader.getNumber(), newPacket);
+//            k += 1;
+//        }
+//
+//        int buffLength = 0;
+//        for (int i = 0; i < countOfPieces; i++) {
+//            buffLength += list.get(i).getPieceOfBuffer().length;
+//        }
+//        try (ByteArrayOutputStream byteStream = new ByteArrayOutputStream(buffLength)) {
+//            for (int i = 0; i < countOfPieces; i++) {
+//                byteStream.write(list.get(i).getPieceOfBuffer());
+//            }
+//            return serializer.deserialize(byteStream.toByteArray());
+//        } catch (Exception e){
+//            logger.error(e.getMessage());
+//            return null;
+//        }
+//    }
 }

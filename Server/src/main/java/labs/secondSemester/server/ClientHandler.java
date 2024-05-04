@@ -10,12 +10,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.ByteArrayOutputStream;
-import java.io.EOFException;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketAddress;
-import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
@@ -38,8 +36,7 @@ public class ClientHandler implements Runnable{
         runtimeManager = new RuntimeManager();
     }
 
-    public ClientHandler(DatagramSocket socket) throws SocketException {
-//        datagramSocket = new DatagramSocket(PORT);
+    public ClientHandler(DatagramSocket socket){
         datagramSocket = socket;
     }
 
@@ -49,12 +46,13 @@ public class ClientHandler implements Runnable{
             try {
                 byte[] buffer = new byte[BUFFER_LENGTH];
                 DatagramPacket datagramPacket = new DatagramPacket(buffer, buffer.length, datagramSocket.getInetAddress(), PORT);
+                logger.info("Чтение запроса.");
                 Command command = readRequest(datagramPacket, buffer);
-
 
                 fixedPool.execute(() -> {
                     Response response = null;
                     try {
+                        logger.info("Выполнение запроса.");
                         response = runtimeManager.commandProcessing(command, false, null);
                     } catch (IllegalValueException e) {
                         System.out.println(e.getMessage());
@@ -63,6 +61,7 @@ public class ClientHandler implements Runnable{
                     Response finalResponse = response;
                     forkJoinPool.execute(() -> {
                         try {
+                            logger.info("Отправка ответа.");
                             sendResponse(finalResponse, datagramPacket.getSocketAddress());
                         } catch (IOException e) {
                             throw new RuntimeException(e);
