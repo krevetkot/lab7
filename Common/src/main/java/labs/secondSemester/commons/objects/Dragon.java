@@ -71,6 +71,8 @@ public class Dragon implements Comparable<Dragon>, Serializable {
     @XmlElement(name = "killer", required = true, nillable = true)
     private Person killer; //Поле может быть null
 
+    private String owner;
+
     /**
      * Конструктор дракона со всеми параметрами, исключаяя id и дату создания.
      * Используется для создания нового дракона.
@@ -83,7 +85,7 @@ public class Dragon implements Comparable<Dragon>, Serializable {
      * @param type        - тип дракона
      * @param killer      - убийца дракона
      **/
-    public Dragon(String name, Coordinates coordinates, Long age, Long weight, boolean speaking, DragonType type, Person killer) {
+    public Dragon(String name, Coordinates coordinates, Long age, Long weight, boolean speaking, DragonType type, Person killer, String owner) {
         this.id = IDManager.generateID();
         this.name = name;
         this.coordinates = coordinates;
@@ -93,6 +95,7 @@ public class Dragon implements Comparable<Dragon>, Serializable {
         this.speaking = speaking;
         this.type = type;
         this.killer = killer;
+        this.owner = owner;
     }
 
     /**
@@ -108,7 +111,7 @@ public class Dragon implements Comparable<Dragon>, Serializable {
      * @param type         - тип дракона
      * @param killer       - убийца дракона
      **/
-    public Dragon(int id, String name, Coordinates coordinates, LocalDate creationDate, Long age, Long weight, boolean speaking, DragonType type, Person killer) {
+    public Dragon(int id, String name, Coordinates coordinates, LocalDate creationDate, Long age, Long weight, boolean speaking, DragonType type, Person killer, String owner) {
         this.id = id;
         this.name = name;
         this.coordinates = coordinates;
@@ -118,6 +121,7 @@ public class Dragon implements Comparable<Dragon>, Serializable {
         this.speaking = speaking;
         this.type = type;
         this.killer = killer;
+        this.owner = owner;
     }
 
     /**

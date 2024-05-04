@@ -76,6 +76,7 @@ public class Client {
                     DragonForm newDragon = new DragonForm();
                     try {
                         Dragon buildedDragon = newDragon.build(scanner, false);
+                        buildedDragon.setOwner(clientID.getLogin());
                         command.setObjectArgument(buildedDragon);
                     } catch (FailedBuildingException | IllegalValueException e) {
                         Console.print(e.getMessage(), false);

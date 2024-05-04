@@ -46,7 +46,7 @@ public class DragonForm extends Form<Dragon> {
             killer = personForm.build(scanner, fileMode);
         }
 
-        Dragon newDragon = new Dragon(IDManager.generateID(), name, coords, LocalDate.now(), age, weight, speaking, type, killer);
+        Dragon newDragon = new Dragon(IDManager.generateID(), name, coords, LocalDate.now(), age, weight, speaking, type, killer, null);
         if (!Validator.dragonValidation(newDragon)) {
             throw new FailedBuildingException("Недопустимое значение в поле!", Dragon.class);
         }
