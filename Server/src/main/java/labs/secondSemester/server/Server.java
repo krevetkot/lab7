@@ -1,25 +1,15 @@
 package labs.secondSemester.server;
 
-import labs.secondSemester.commons.commands.Command;
-import labs.secondSemester.commons.exceptions.IllegalValueException;
-import labs.secondSemester.commons.network.Header;
-import labs.secondSemester.commons.network.Packet;
-import labs.secondSemester.commons.network.Response;
+import labs.secondSemester.commons.managers.DatabaseManager;
 import labs.secondSemester.commons.network.Serializer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.xml.crypto.Data;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.SocketAddress;
 import java.net.SocketException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Scanner;
 
 public class Server {
@@ -57,7 +47,7 @@ public class Server {
 
 
         while (true) {
-            new Thread(new ClientHandler(this.datagramSocket)).start();
+            new Thread(new ClientHandler(datagramSocket, databaseManager)).start();
         }
 
     }

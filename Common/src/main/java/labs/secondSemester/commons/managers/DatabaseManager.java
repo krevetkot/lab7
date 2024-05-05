@@ -1,8 +1,10 @@
-package labs.secondSemester.server;
+package labs.secondSemester.commons.managers;
 
 import labs.secondSemester.commons.exceptions.FailedBuildingException;
 import labs.secondSemester.commons.managers.CollectionManager;
 import labs.secondSemester.commons.managers.Validator;
+import labs.secondSemester.commons.network.ClientIdentification;
+import labs.secondSemester.commons.network.Header;
 import labs.secondSemester.commons.objects.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -80,13 +82,14 @@ public class DatabaseManager {
         return res.getInt("person_id");
     }
 
-    public void addDragon(Dragon dragon) throws SQLException {
-        if (findUser(dragon.getOwner())==-1){
-            int userID = addUser(dragon.getOwner());
+    public void addDragon(Dragon dragon, ClientIdentification clientID) throws SQLException {
+        int userID = findUser(clientID.getLogin());
+        if (userID==-1){
+             userID = addUser(clientID);
         }
         int personID = addPerson(dragon.getKiller());
         int coordsID = addCoordinates(dragon.getCoordinates());
-        PreparedStatement addStatement = connection.prepareStatement("insert into dragon (dragon_name, coordinates, creation_date, age, weight, speaking, type, killer);");
+        PreparedStatement addStatement = connection.prepareStatement("insert into dragon (dragon_name, coordinates, creation_date, age, weight, speaking, type, killer, owner);");
         addStatement.setString(1, dragon.getName());
         addStatement.setInt(2, coordsID);
         addStatement.setDate(3, Date.valueOf(dragon.getCreationDate()));
@@ -95,13 +98,14 @@ public class DatabaseManager {
         addStatement.setBoolean(6, dragon.getSpeaking());
         addStatement.setString(7, dragon.getType().getName());
         addStatement.setInt(8, personID);
-
+        addStatement.setInt(9, userID);
+        logger.info("Элемент успешно добавлен в базу данных.");
     }
 
-    public int addUser(String login, String password) throws SQLException {
+    public int addUser(ClientIdentification clientID) throws SQLException {
         PreparedStatement addStatement = connection.prepareStatement("insert into users(login, password) values (?, ?);");
-        addStatement.setString(1, login);
-        addStatement.setString(2, password);
+        addStatement.setString(1, clientID.getLogin());
+        addStatement.setString(2, clientID.getPassword());
         addStatement.executeUpdate();
         ResultSet res = addStatement.executeQuery();
         res.next();

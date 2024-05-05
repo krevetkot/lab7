@@ -2,6 +2,7 @@ package labs.secondSemester.server;
 
 import labs.secondSemester.commons.commands.Command;
 import labs.secondSemester.commons.exceptions.IllegalValueException;
+import labs.secondSemester.commons.managers.DatabaseManager;
 import labs.secondSemester.commons.network.Header;
 import labs.secondSemester.commons.network.Packet;
 import labs.secondSemester.commons.network.Response;
@@ -28,6 +29,7 @@ public class ClientHandler implements Runnable{
     private final RuntimeManager runtimeManager;
     private final int BUFFER_LENGTH = 10240;
     private final ExecutorService fixedPool = Executors.newFixedThreadPool(10);
+    private DatabaseManager databaseManager;
     private static final Logger logger = LogManager.getLogger();
 
 
@@ -36,8 +38,9 @@ public class ClientHandler implements Runnable{
         runtimeManager = new RuntimeManager();
     }
 
-    public ClientHandler(DatagramSocket socket){
+    public ClientHandler(DatagramSocket socket, DatabaseManager dbmanager){
         datagramSocket = socket;
+        databaseManager = dbmanager;
     }
 
     @Override
