@@ -138,24 +138,32 @@ public class DatabaseManager {
         long age = result.getLong("age");
         long weight = result.getLong("weight");
         boolean speaking = result.getBoolean("speaking");
-        DragonType type = DragonType.valueOf(result.getString("type"));
+        DragonType type = null;
+        if (!result.getString("type").equals("null")){
+            type = DragonType.valueOf(result.getString("type"));
+        }
 
         long x = result.getLong("x");
         float y = result.getFloat("y");
 
         //сделать адекватную обработку когда в персоне нул
 
-        String personName = result.getString("person_name");
-        String passportId = result.getString("passport_id");
-        Color eyeColor = Color.valueOf(result.getString("eye_color"));
-        Color hairColor = Color.valueOf(result.getString("hair_color"));
-        Country nationality = Country.valueOf(result.getString("nationality"));
-        Long countKilledDragons = result.getLong("countKilledDragons");
+//        result.getInt("killer");
+
+        Person person = null;
+        if (!(result.getString("killer")==null)){
+            String personName = result.getString("person_name");
+            String passportId = result.getString("passport_id");
+            Color eyeColor = Color.valueOf(result.getString("eye_color"));
+            Color hairColor = Color.valueOf(result.getString("hair_color"));
+            Country nationality = Country.valueOf(result.getString("nationality"));
+            Long countKilledDragons = result.getLong("countKilledDragons");
+            person = new Person(personName, passportId, eyeColor, hairColor, nationality, countKilledDragons);
+        }
 
         String ownerName = result.getString("login");
 
         Coordinates coords = new Coordinates(x, y);
-        Person person = new Person(personName, passportId, eyeColor, hairColor, nationality, countKilledDragons);
         Dragon dragon = new Dragon(dragonId, dragonName, coords, creationDate, age, weight, speaking, type, person, ownerName);
         if (!Validator.dragonValidation(dragon)) {
             throw new FailedBuildingException("Недопустимое значение в поле!", Dragon.class);
