@@ -27,6 +27,7 @@
         <speaking>false</speaking>
         <type xsi:nil="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"/>
         <killer xsi:nil="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"/>
+        <owner>Kseniya</owner>
     </dragon>
     <dragon>
         <id>18348624</id>
@@ -48,6 +49,7 @@
             <nationality>USA</nationality>
             <countKilledDragons>2</countKilledDragons>
         </killer>
+        <owner>Kseniya</owner>
     </dragon>
     <dragon>
         <id>18340624</id>
@@ -69,6 +71,7 @@
             <nationality>USA</nationality>
             <countKilledDragons>1</countKilledDragons>
         </killer>
+        <owner>Kseniya</owner>
     </dragon>
     <dragon>
         <id>18347624</id>
@@ -90,5 +93,6 @@
             <nationality>USA</nationality>
             <countKilledDragons>3</countKilledDragons>
         </killer>
+        <owner>Kseniya</owner>
     </dragon>
 </dragons>

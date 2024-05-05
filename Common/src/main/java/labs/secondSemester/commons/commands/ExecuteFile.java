@@ -1,6 +1,7 @@
 package labs.secondSemester.commons.commands;
 
 import labs.secondSemester.commons.exceptions.IllegalValueException;
+import labs.secondSemester.commons.managers.DatabaseManager;
 import labs.secondSemester.commons.network.Response;
 
 import java.util.Scanner;
@@ -18,7 +19,7 @@ public class ExecuteFile extends Command {
 
 
     @Override
-    public Response execute(String argument, boolean fileMode, Scanner scanner) throws IllegalValueException {
+    public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws IllegalValueException {
         return null;
     }
 

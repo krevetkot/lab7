@@ -4,6 +4,7 @@ import labs.secondSemester.commons.exceptions.FailedBuildingException;
 import labs.secondSemester.commons.exceptions.IllegalValueException;
 import labs.secondSemester.commons.managers.CollectionManager;
 import labs.secondSemester.commons.managers.Console;
+import labs.secondSemester.commons.managers.DatabaseManager;
 import labs.secondSemester.commons.network.Response;
 import labs.secondSemester.commons.objects.Dragon;
 import labs.secondSemester.commons.objects.forms.DragonForm;
@@ -22,7 +23,7 @@ public class InsertAt extends Command {
     }
 
     @Override
-    public Response execute(String argument, boolean fileMode, Scanner scanner)
+    public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager)
             throws NoSuchElementException, NumberFormatException, IllegalValueException {
 
         if (CollectionManager.getCollection().isEmpty()) {

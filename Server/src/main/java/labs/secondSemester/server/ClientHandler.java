@@ -49,7 +49,7 @@ public class ClientHandler implements Runnable{
             try {
                 byte[] buffer = new byte[BUFFER_LENGTH];
                 DatagramPacket datagramPacket = new DatagramPacket(buffer, buffer.length, datagramSocket.getInetAddress(), PORT);
-                logger.info("Чтение запроса.");
+
                 Command command = readRequest(datagramPacket, buffer);
 
                 fixedPool.execute(() -> {
@@ -107,6 +107,7 @@ public class ClientHandler implements Runnable{
     }
 
     public <T> T readRequest(DatagramPacket datagramPacket, byte[] buffer) throws IOException {
+//        logger.info("Чтение запроса.");
         datagramSocket.receive(datagramPacket);
         Packet packet = serializer.deserialize(buffer);
         Header header = packet.getHeader();

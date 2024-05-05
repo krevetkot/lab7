@@ -24,13 +24,13 @@ public class RuntimeManager {
         String argument = command.getStringArgument();
         if (command.isArgs()) {
             try {
-                return command.execute(argument, fileMode, scanner);
+                return command.execute(argument, fileMode, scanner, null);
             } catch (Exception var6) {
                 return new Response(var6.getMessage());
             }
         } else {
             try {
-                return command.execute(null, fileMode, scanner);
+                return command.execute(null, fileMode, scanner, null);
             } catch (IllegalValueException var7) {
                 return new Response(var7.getMessage());
             }

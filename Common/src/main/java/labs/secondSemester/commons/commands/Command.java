@@ -2,6 +2,7 @@ package labs.secondSemester.commons.commands;
 
 
 import labs.secondSemester.commons.exceptions.IllegalValueException;
+import labs.secondSemester.commons.managers.DatabaseManager;
 import labs.secondSemester.commons.network.Response;
 import labs.secondSemester.commons.objects.Dragon;
 import lombok.Getter;
@@ -53,5 +54,5 @@ public abstract class Command implements Serializable {
      * @return response
      * @throws IllegalValueException - при недопустимом аргументе
      */
-    public abstract Response execute(String argument, boolean fileMode, Scanner scanner) throws IllegalValueException;
+    public abstract Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws IllegalValueException;
 }

@@ -14,8 +14,10 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import static java.sql.Types.INTEGER;
+
 public class DatabaseManager {
-    private String URL = "jdbc:postgresql://localhost:2225/studs";
+    private String URL = "jdbc:postgresql://localhost:9876/studs";
     private String user;
     private String password;
     private Connection connection;
@@ -40,7 +42,7 @@ public class DatabaseManager {
     public void loadCollection() throws SQLException, FailedBuildingException {
         ArrayList<Dragon> collection = new ArrayList<>();
         String join = "select * from dragon " +
-                "join person on (dragon.killer = person.person_id) " +
+                "left join person on (dragon.killer = person.person_id) " +
                 "join coordinates on (dragon.coordinates = coordinates.coordinates_id)" +
                 "join users on (dragon.owner = users.user_id);";
         PreparedStatement joinStatement = connection.prepareStatement(join);
@@ -53,30 +55,30 @@ public class DatabaseManager {
         Collections.sort(collection);
     }
 
-    public void saveCollection(){
-
+    public void saveCollection() throws SQLException {
+        for (Dragon dragon: CollectionManager.getCollection()){
+            addDragon(dragon, new ClientIdentification("Kseniya", "12345"));
+        }
     }
 
     public int addCoordinates(Coordinates coords) throws SQLException {
-        PreparedStatement addStatement = connection.prepareStatement("insert into coordinates(x, y) values (?, ?);");
+        PreparedStatement addStatement = connection.prepareStatement("insert into coordinates(x, y) values (?, ?) returning coordinates_id;");
         addStatement.setLong(1, coords.getX());
         addStatement.setFloat(2, coords.getY());
-        addStatement.executeUpdate();
+//        addStatement.executeUpdate();
         ResultSet res = addStatement.executeQuery();
         res.next();
         return res.getInt("coordinates_id");
     }
 
     public int addPerson(Person person) throws SQLException {
-        PreparedStatement addStatement = connection.prepareStatement("insert into person (person_name, passport_id, eye_color, hair_color, nationality, countKilledDragons) values (?, ?, ?, ?, ?, ?);");
+        PreparedStatement addStatement = connection.prepareStatement("insert into person (person_name, passport_id, eye_color, hair_color, nationality, countKilledDragons) values (?, ?, ?, ?, ?, ?) returning person_id;");
         addStatement.setString(1, person.getName());
         addStatement.setString(2, person.getPassportID());
         addStatement.setString(3, String.valueOf(person.getEyeColor()));
         addStatement.setString(4, String.valueOf(person.getHairColor()));
         addStatement.setString(5, String.valueOf(person.getNationality()));
-        //если не будет работать, надо будет добавить getname в enum'ы
-        addStatement.setLong(3, person.getCountKilledDragons());
-        addStatement.executeUpdate();
+        addStatement.setLong(6, person.getCountKilledDragons());
         ResultSet res = addStatement.executeQuery();
         res.next();
         return res.getInt("person_id");
@@ -87,18 +89,23 @@ public class DatabaseManager {
         if (userID==-1){
              userID = addUser(clientID);
         }
-        int personID = addPerson(dragon.getKiller());
         int coordsID = addCoordinates(dragon.getCoordinates());
-        PreparedStatement addStatement = connection.prepareStatement("insert into dragon (dragon_name, coordinates, creation_date, age, weight, speaking, type, killer, owner);");
+        PreparedStatement addStatement = connection.prepareStatement("insert into dragon (dragon_name, coordinates, creation_date, age, weight, speaking, type, killer, owner) values (?, ?, ?, ?, ?, ?, ?, ?, ?);");
         addStatement.setString(1, dragon.getName());
         addStatement.setInt(2, coordsID);
         addStatement.setDate(3, Date.valueOf(dragon.getCreationDate()));
         addStatement.setLong(4, dragon.getAge());
         addStatement.setLong(5, dragon.getWeight());
         addStatement.setBoolean(6, dragon.getSpeaking());
-        addStatement.setString(7, dragon.getType().getName());
-        addStatement.setInt(8, personID);
+        addStatement.setString(7, String.valueOf(dragon.getType()));
+        if (dragon.getKiller()!=null){
+            int personID = addPerson(dragon.getKiller());
+            addStatement.setInt(8, personID);
+        } else {
+            addStatement.setNull(8, INTEGER);
+        }
         addStatement.setInt(9, userID);
+        addStatement.executeUpdate();
         logger.info("Элемент успешно добавлен в базу данных.");
     }
 
@@ -114,7 +121,7 @@ public class DatabaseManager {
 
     public int findUser(String login){
         try {
-            ResultSet res = connection.prepareStatement("select * from users where (users.login = \"" + login + "\");").executeQuery();
+            ResultSet res = connection.prepareStatement("select * from users where (users.login = \'" + login + "\');").executeQuery();
             if (res.next()){
                 return res.getInt("user_id");
             }

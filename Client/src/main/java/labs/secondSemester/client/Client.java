@@ -84,7 +84,7 @@ public class Client {
                 }
 
                 if (command instanceof Exit) {
-                    command.execute(null, false, null);
+                    command.execute(null, false, null, null);
 
                 }
                 if (command instanceof ExecuteFile) {

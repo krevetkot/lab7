@@ -58,7 +58,7 @@ public class FileManager {
                     }
 
                     if (scriptCommand.getClass().equals(Exit.class)) {
-                        scriptCommand.execute(null, false, null);
+                        scriptCommand.execute(null, false, null, null);
                     }
                     if (scriptCommand.getClass().equals(ExecuteFile.class)){
                         executeFile(scriptCommand.getStringArgument());
