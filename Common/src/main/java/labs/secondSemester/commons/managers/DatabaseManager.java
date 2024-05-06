@@ -84,13 +84,13 @@ public class DatabaseManager {
         return res.getInt("person_id");
     }
 
-    public void addDragon(Dragon dragon, ClientIdentification clientID) throws SQLException {
+    public int addDragon(Dragon dragon, ClientIdentification clientID) throws SQLException {
         int userID = findUser(clientID.getLogin());
         if (userID==-1){
              userID = addUser(clientID);
         }
         int coordsID = addCoordinates(dragon.getCoordinates());
-        PreparedStatement addStatement = connection.prepareStatement("insert into dragon (dragon_name, coordinates, creation_date, age, weight, speaking, type, killer, owner) values (?, ?, ?, ?, ?, ?, ?, ?, ?);");
+        PreparedStatement addStatement = connection.prepareStatement("insert into dragon (dragon_name, coordinates, creation_date, age, weight, speaking, type, killer, owner) values (?, ?, ?, ?, ?, ?, ?, ?, ?) returning dragon_id;");
         addStatement.setString(1, dragon.getName());
         addStatement.setInt(2, coordsID);
         addStatement.setDate(3, Date.valueOf(dragon.getCreationDate()));
@@ -105,8 +105,10 @@ public class DatabaseManager {
             addStatement.setNull(8, INTEGER);
         }
         addStatement.setInt(9, userID);
-        addStatement.executeUpdate();
+        ResultSet res = addStatement.executeQuery();
+        res.next();
         logger.info("Элемент успешно добавлен в базу данных.");
+        return res.getInt("dragon_id");
     }
 
     public int addUser(ClientIdentification clientID) throws SQLException {
@@ -121,7 +123,9 @@ public class DatabaseManager {
 
     public int findUser(String login){
         try {
-            ResultSet res = connection.prepareStatement("select * from users where (users.login = \'" + login + "\');").executeQuery();
+            PreparedStatement ps = connection.prepareStatement("select * from users where (users.login =?);");
+            ps.setString(1, login);
+            ResultSet res = ps.executeQuery();
             if (res.next()){
                 return res.getInt("user_id");
             }
@@ -145,10 +149,6 @@ public class DatabaseManager {
 
         long x = result.getLong("x");
         float y = result.getFloat("y");
-
-        //сделать адекватную обработку когда в персоне нул
-
-//        result.getInt("killer");
 
         Person person = null;
         if (!(result.getString("killer")==null)){

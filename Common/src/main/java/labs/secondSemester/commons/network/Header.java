@@ -8,11 +8,9 @@ import java.io.Serializable;
 public class Header implements Serializable {
     private int count; //количество всех блоков
     private int number; //порядковый номер этого блока
-    private ClientIdentification clientID;
 
-    public Header(int count, int number, ClientIdentification clientID){
+    public Header(int count, int number){
         this.count = count;
         this.number = number;
-        this.clientID = clientID;
     }
 }

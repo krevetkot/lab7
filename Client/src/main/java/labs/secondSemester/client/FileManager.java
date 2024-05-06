@@ -7,6 +7,7 @@ import labs.secondSemester.commons.exceptions.FailedBuildingException;
 import labs.secondSemester.commons.exceptions.IllegalValueException;
 import labs.secondSemester.commons.managers.Console;
 import labs.secondSemester.commons.managers.ScriptManager;
+import labs.secondSemester.commons.network.ClientIdentification;
 import labs.secondSemester.commons.network.Response;
 import labs.secondSemester.commons.objects.Dragon;
 import labs.secondSemester.commons.objects.forms.DragonForm;
@@ -24,7 +25,7 @@ public class FileManager {
         this.client = client;
     }
 
-    public void executeFile(String argument) {
+    public void executeFile(String argument, ClientIdentification clientID) {
         try {
             if (!(new File(argument).isFile())) {
                 throw new IOException("Невозможно прочесть файл.");
@@ -44,7 +45,7 @@ public class FileManager {
                 }
 
                 try {
-                    CommandFactory commandFactory = new CommandFactory();
+                    CommandFactory commandFactory = new CommandFactory(clientID);
 
                     Command scriptCommand = commandFactory.buildCommand(line);
                     if (scriptCommand.getName().equals("add") || scriptCommand.getName().equals("insert_at") || scriptCommand.getName().equals("update")) {
@@ -61,7 +62,7 @@ public class FileManager {
                         scriptCommand.execute(null, false, null, null);
                     }
                     if (scriptCommand.getClass().equals(ExecuteFile.class)){
-                        executeFile(scriptCommand.getStringArgument());
+                        executeFile(scriptCommand.getStringArgument(), null);
                     }
                     else {
                         client.send(scriptCommand);

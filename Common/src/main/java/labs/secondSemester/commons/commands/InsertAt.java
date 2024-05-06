@@ -9,6 +9,7 @@ import labs.secondSemester.commons.network.Response;
 import labs.secondSemester.commons.objects.Dragon;
 import labs.secondSemester.commons.objects.forms.DragonForm;
 
+import java.sql.SQLException;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
@@ -46,11 +47,13 @@ public class InsertAt extends Command {
             Dragon buildedDragon = newDragon.build(scanner, fileMode);
             if (!CollectionManager.getCollection().contains(buildedDragon)) {
                 CollectionManager.getCollection().add(buildedDragon);
+                dbmanager.addDragon(buildedDragon, getClientID());
+                //пока не инсерт, а эдд
                 Console.print("Спасибо, ваши данные приняты!", fileMode);
             } else {
                 Console.print("Такой дракон уже есть в коллекции.", false);
             }
-        } catch (FailedBuildingException e) {
+        } catch (FailedBuildingException | SQLException e) {
             Console.print(e.getMessage(), false);
         }
         return null;

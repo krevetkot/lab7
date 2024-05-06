@@ -15,6 +15,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.NoSuchElementException;
@@ -49,12 +50,10 @@ public class Client {
 
         connectServer(1);
         ByteBuffer buffer = ByteBuffer.allocate(BUFFER_LENGTH);
-
-        CommandFactory commandFactory = new CommandFactory();
-
         String request = null;
         Scanner scanner = new Scanner(System.in);
         clientID = new ClientIdentification("Kseniya", "111");
+        CommandFactory commandFactory = new CommandFactory(clientID);
 //            singIn(scanner);
         //нужна какая-то проверка, что такой чел есть, но ее позже
         System.out.println(clientID.getLogin() +
@@ -89,13 +88,13 @@ public class Client {
                 }
                 if (command instanceof ExecuteFile) {
                     assert request != null;
-                    fileManager.executeFile(request.trim().split(" ")[1]);
+                    fileManager.executeFile(request.trim().split(" ")[1], clientID);
                     continue;
                 } else {
                     send(command);
                 }
 
-            } catch (IllegalValueException | ArrayIndexOutOfBoundsException | NumberFormatException e) {
+            } catch (IllegalValueException | ArrayIndexOutOfBoundsException | NumberFormatException | SQLException e) {
                 System.out.println(e.getMessage());
                 continue;
             }
@@ -130,7 +129,7 @@ public class Client {
 
     public void send(Command command) {
         try {
-            Header header = new Header(0, 0, null);
+            Header header = new Header(0, 0);
             int headerLength = serializer.serialize(header).length + 200;
 
             byte[] buffer = serializer.serialize(command);
@@ -140,7 +139,7 @@ public class Client {
                 countOfPieces += 1;
             }
             for (int i = 0; i < countOfPieces; i++) {
-                header = new Header(countOfPieces, i, clientID);
+                header = new Header(countOfPieces, i);
                 headerLength = serializer.serialize(header).length + 200;
                 Packet packet = new Packet(header, Arrays.copyOfRange(buffer, i * (BUFFER_LENGTH - headerLength), Math.min(bufferLength, (i + 1) * (BUFFER_LENGTH - headerLength))));
                 datagramChannel.send(ByteBuffer.wrap(serializer.serialize(packet)), serverAddress);

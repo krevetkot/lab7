@@ -9,13 +9,16 @@ import labs.secondSemester.commons.commands.Command;
 import labs.secondSemester.commons.exceptions.IllegalValueException;
 import labs.secondSemester.commons.managers.CommandManager;
 import labs.secondSemester.commons.managers.Validator;
+import labs.secondSemester.commons.network.ClientIdentification;
 
 import java.util.Arrays;
 
 public class CommandFactory {
     private final CommandManager commandManager = new CommandManager();
+    private ClientIdentification clientID;
 
-    public CommandFactory() {
+    public CommandFactory(ClientIdentification clientID) {
+        this.clientID = clientID;
     }
 
     public Command buildCommand(String request) throws IllegalValueException, ArrayIndexOutOfBoundsException, NumberFormatException {
@@ -37,6 +40,7 @@ public class CommandFactory {
         if (request.trim().split(" ").length > 1) {
             command.setStringArgument(request.trim().split(" ")[1]);
         }
+        command.setClientID(clientID);
 
         return command;
     }

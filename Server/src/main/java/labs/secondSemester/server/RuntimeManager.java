@@ -2,6 +2,7 @@ package labs.secondSemester.server;
 
 import labs.secondSemester.commons.commands.Command;
 import labs.secondSemester.commons.exceptions.IllegalValueException;
+import labs.secondSemester.commons.managers.DatabaseManager;
 import labs.secondSemester.commons.network.Response;
 
 import java.util.Scanner;
@@ -20,19 +21,19 @@ public class RuntimeManager {
      * @throws IllegalValueException - ошибка недопустимых данных, команду невозможно выполнить
      */
 
-    public Response commandProcessing(Command command, boolean fileMode, Scanner scanner) throws IllegalValueException, ArrayIndexOutOfBoundsException, NumberFormatException {
+    public Response commandProcessing(Command command, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws IllegalValueException, ArrayIndexOutOfBoundsException, NumberFormatException {
         String argument = command.getStringArgument();
         if (command.isArgs()) {
             try {
-                return command.execute(argument, fileMode, scanner, null);
-            } catch (Exception var6) {
-                return new Response(var6.getMessage());
+                return command.execute(argument, fileMode, scanner, dbmanager);
+            } catch (Exception e) {
+                return new Response(e.getMessage());
             }
         } else {
             try {
-                return command.execute(null, fileMode, scanner, null);
-            } catch (IllegalValueException var7) {
-                return new Response(var7.getMessage());
+                return command.execute(null, fileMode, scanner, dbmanager);
+            } catch (Exception e) {
+                return new Response(e.getMessage());
             }
         }
     }

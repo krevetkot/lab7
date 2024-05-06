@@ -56,7 +56,7 @@ public class ClientHandler implements Runnable{
                     Response response = null;
                     try {
                         logger.info("Выполнение запроса.");
-                        response = runtimeManager.commandProcessing(command, false, null);
+                        response = runtimeManager.commandProcessing(command, false, null, databaseManager);
                     } catch (IllegalValueException e) {
                         System.out.println(e.getMessage());
                     }
@@ -80,7 +80,7 @@ public class ClientHandler implements Runnable{
 
     public void sendResponse(Response response, SocketAddress address) throws IOException {
         try {
-            Header header = new Header(0, 0, null);
+            Header header = new Header(0, 0);
             int headerLength = serializer.serialize(header).length + 200;
 
             byte[] buffer = serializer.serialize(response);
@@ -90,7 +90,7 @@ public class ClientHandler implements Runnable{
                 countOfPieces += 1;
             }
             for (int i=0; i<countOfPieces; i++){
-                header = new Header(countOfPieces, i, null);
+                header = new Header(countOfPieces, i);
                 headerLength = serializer.serialize(header).length + 200;
                 Packet packet = new Packet(header, Arrays.copyOfRange(buffer, i*(BUFFER_LENGTH-headerLength), Math.min(bufferLength, (i+1)*(BUFFER_LENGTH-headerLength)) ));
 

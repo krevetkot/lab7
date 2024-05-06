@@ -1,3 +1,9 @@
-execute_file script2.txt
-show
-fhdadohia
+add
+Sergey
+23
+34
+565
+6
+true
+AIR
+false
