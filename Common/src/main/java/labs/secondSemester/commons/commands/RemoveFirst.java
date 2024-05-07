@@ -22,6 +22,7 @@ public class RemoveFirst extends Command {
         if (CollectionManager.getCollection().isEmpty()) {
             return new Response("Коллекция пуста.");
         } else {
+            dbmanager.removeByID(CollectionManager.getCollection().get(0).getId());
             CollectionManager.getCollection().remove(0);
             return new Response("Первый элемент в коллекции удален.");
         }

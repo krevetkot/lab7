@@ -42,18 +42,17 @@ public class InsertAt extends Command {
             throw new NoSuchElementException("Агрумент index должен быть больше или равен нулю.");
         }
 
-        DragonForm newDragon = new DragonForm();
         try {
-            Dragon buildedDragon = newDragon.build(scanner, fileMode);
+            Dragon buildedDragon = getObjectArgument();
             if (!CollectionManager.getCollection().contains(buildedDragon)) {
-                CollectionManager.getCollection().add(buildedDragon);
-                dbmanager.addDragon(buildedDragon, getClientID());
-                //пока не инсерт, а эдд
+                int dragonID = dbmanager.addDragon(buildedDragon, getClientID());
+                buildedDragon.setId(dragonID);
+                CollectionManager.getCollection().add(index, buildedDragon);
                 Console.print("Спасибо, ваши данные приняты!", fileMode);
             } else {
                 Console.print("Такой дракон уже есть в коллекции.", false);
             }
-        } catch (FailedBuildingException | SQLException e) {
+        } catch (SQLException e) {
             Console.print(e.getMessage(), false);
         }
         return null;

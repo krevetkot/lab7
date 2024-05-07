@@ -49,12 +49,12 @@ public class Server {
 
         BDConnect();
 
-//        try {
-//            databaseManager.saveCollection();
-//        } catch (SQLException e) {
-//            logger.error(e.getMessage());
-//            System.exit(-1);
-//        }
+        try {
+            databaseManager.saveCollection();
+        } catch (SQLException e) {
+            logger.error(e.getMessage());
+            System.exit(-1);
+        }
 
         CollectionManager.getCollection().clear();
 

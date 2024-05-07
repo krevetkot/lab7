@@ -133,29 +133,27 @@ public class Dragon implements Comparable<Dragon>, Serializable {
     @Override
     public String toString() {
         if (killer == null) {
-            return this.getClass().getName() + '{'
-                    + "id=" + this.id
-                    + ", name=" + this.name
-                    + ", coordinates=" + this.coordinates
-                    + ", creation date=" + this.creationDate
-                    + ", age=" + this.age
-                    + ", weight=" + this.weight
-                    + ", speaking=" + this.speaking
-                    + ", type=" + this.type
-                    + ", killer=null"
-                    + '}';
+            return "Дракон: "
+                    + "id = " + this.id
+                    + ", имя = " + this.name
+                    + ", координаты = " + this.coordinates
+                    + ", дата создания = " + this.creationDate
+                    + ", возраст = " + this.age
+                    + ", вес = " + this.weight
+                    + ", способность говорить = " + this.speaking
+                    + ", тип = " + this.type
+                    + ", убийца = нет";
         }
-        return this.getClass().getName() + '{'
-                + "id= " + this.id
-                + ", name=" + this.name
-                + ", coordinates=" + this.coordinates
-                + ", creation date=" + this.creationDate
-                + ", age=" + this.age
-                + ", weight=" + this.weight
-                + ", speaking=" + this.speaking
-                + ", type=" + this.type
-                + ", killer=" + this.killer.toString()
-                + '}';
+        return "Дракон: "
+                + "id = " + this.id
+                + ", имя = " + this.name
+                + ", координаты = " + this.coordinates
+                + ", дата создания = " + this.creationDate
+                + ", возраст = " + this.age
+                + ", вес = " + this.weight
+                + ", способность говорить = " + this.speaking
+                + ", тип = " + this.type
+                + ", " + this.killer;
     }
 
     @Override

@@ -19,7 +19,7 @@ import java.nio.ByteBuffer;
 import java.util.Scanner;
 
 public class FileManager {
-    private Client client;
+    private final Client client;
 
     public FileManager(Client client){
         this.client = client;

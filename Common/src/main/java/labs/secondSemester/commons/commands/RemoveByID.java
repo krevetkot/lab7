@@ -30,14 +30,10 @@ public class RemoveByID extends Command {
 
         if (oldDragon == null) {
             throw new NoSuchElementException("Нет элемента с таким ID.");
-        }
-
-        if (CollectionManager.getCollection().remove(oldDragon)) {
-            return new Response("Элемент с ID " + id + " удален");
         } else {
-            return new Response("Элемент с ID " + id + " не удален");
+            dbmanager.removeByID((int) id);
+            CollectionManager.getCollection().remove(oldDragon);
+            return new Response("Элемент с ID " + id + " удален");
         }
-
     }
-
 }

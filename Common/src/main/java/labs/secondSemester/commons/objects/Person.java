@@ -75,13 +75,13 @@ public class Person implements Serializable {
 
     @Override
     public String toString() {
-        return this.getClass().getName() + '{'
-                + "name=" + this.name
-                + ", pasport id=" + this.passportID
-                + ", eye color=" + this.eyeColor
-                + ", hair color=" + this.hairColor
-                + ", nationality=" + this.nationality
-                + ", count of killed dragons=" + this.countKilledDragons
+        return "Убийца дракона: "
+                + "имя = " + this.name
+                + ", паспорт = " + this.passportID
+                + ", цвет глаз = " + this.eyeColor
+                + ", цвет волос = " + this.hairColor
+                + ", национальность = " + this.nationality
+                + ", количество убитых драконов = " + this.countKilledDragons
                 + '}';
     }
 

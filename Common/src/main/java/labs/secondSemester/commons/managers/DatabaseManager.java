@@ -170,4 +170,16 @@ public class DatabaseManager {
         }
         return dragon;
     }
+
+    public boolean removeByID(int id){
+        try {
+            PreparedStatement deleteStatement = connection.prepareStatement("delete from dragon where (dragon_id=?);");
+            deleteStatement.setInt(1, id);
+            deleteStatement.executeUpdate();
+            logger.info("Объект с id = " + id + " успешно удален.");
+            return true;
+        } catch (SQLException e) {
+            return false;
+        }
+    }
 }
