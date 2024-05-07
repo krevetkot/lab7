@@ -45,7 +45,7 @@ public class InsertAt extends Command {
         try {
             Dragon buildedDragon = getObjectArgument();
             if (!CollectionManager.getCollection().contains(buildedDragon)) {
-                int dragonID = dbmanager.addDragon(buildedDragon, getClientID());
+                int dragonID = dbmanager.updateOrAddDragon(buildedDragon, getClientID(), false, -1);
                 buildedDragon.setId(dragonID);
                 CollectionManager.getCollection().add(index, buildedDragon);
                 Console.print("Спасибо, ваши данные приняты!", fileMode);

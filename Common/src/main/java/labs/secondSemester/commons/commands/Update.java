@@ -9,6 +9,7 @@ import labs.secondSemester.commons.network.Response;
 import labs.secondSemester.commons.objects.Dragon;
 import labs.secondSemester.commons.objects.forms.DragonForm;
 
+import java.sql.SQLException;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
@@ -38,12 +39,14 @@ public class Update extends Command {
         int index = CollectionManager.getCollection().indexOf(oldDragon);
         int oldID = oldDragon.getId();
 
+        Dragon changedDragon = getObjectArgument();
+
         try {
-            Dragon changedDragon = new DragonForm().build(scanner, fileMode);
+            dbmanager.updateOrAddDragon(changedDragon, getClientID(), true, oldID);
             changedDragon.setId(oldID);
             CollectionManager.getCollection().set(index, changedDragon);
             Console.print("Элемент с ID " + id + " обновлен", fileMode);
-        } catch (FailedBuildingException e) {
+        } catch (SQLException e) {
             Console.print(e.getMessage(), false);
         }
 

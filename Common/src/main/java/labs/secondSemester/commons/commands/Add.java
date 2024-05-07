@@ -25,7 +25,7 @@ public class Add extends Command {
         Response response = new Response();
         Dragon buildedDragon = getObjectArgument();
         if (!CollectionManager.getCollection().contains(buildedDragon)) {
-            int dragonID = dbmanager.addDragon(buildedDragon, getClientID());
+            int dragonID = dbmanager.updateOrAddDragon(buildedDragon, getClientID(), false, -1);
             buildedDragon.setId(dragonID);
             CollectionManager.getCollection().add(buildedDragon);
             Collections.sort(CollectionManager.getCollection());

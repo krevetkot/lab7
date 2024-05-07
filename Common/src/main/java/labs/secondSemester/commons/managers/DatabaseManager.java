@@ -61,11 +61,11 @@ public class DatabaseManager {
     public int updateOrAddCoordinates(Coordinates coords, boolean existence, int id) throws SQLException {
         PreparedStatement statement;
         if (existence){
-            statement = connection.prepareStatement("insert into coordinates(x, y) values (?, ?) returning coordinates_id;");
-        }
-        else {
             statement = connection.prepareStatement("update coordinates set(x, y)=(?, ?) where coordinates_id=? returning coordinates_id;");
             statement.setInt(3, id);
+        }
+        else {
+            statement = connection.prepareStatement("insert into coordinates(x, y) values (?, ?) returning coordinates_id;");
         }
 
         statement.setLong(1, coords.getX());
@@ -78,11 +78,11 @@ public class DatabaseManager {
     public int updateOrAddPerson(Person person, boolean existence, int id) throws SQLException {
         PreparedStatement statement;
         if (existence){
-            statement = connection.prepareStatement("insert into person (person_name, passport_id, eye_color, hair_color, nationality, countKilledDragons) values (?, ?, ?, ?, ?, ?) returning person_id;");
-        }
-        else {
             statement = connection.prepareStatement("update coordinates set(person_name, passport_id, eye_color, hair_color, nationality, countKilledDragons)=(?, ?, ?, ?, ?, ?) where person_id=? returning coordinates_id;");
             statement.setInt(7, id);
+        }
+        else {
+            statement = connection.prepareStatement("insert into person (person_name, passport_id, eye_color, hair_color, nationality, countKilledDragons) values (?, ?, ?, ?, ?, ?) returning person_id;");
         }
         statement.setString(1, person.getName());
         statement.setString(2, person.getPassportID());
@@ -97,6 +97,7 @@ public class DatabaseManager {
 
     public int updateOrAddDragon(Dragon dragon, ClientIdentification clientID, boolean existence, int id) throws SQLException {
         //если existence == true -> update; false -> add
+        //реальное id указывается только если existence=true; иначе -1
         int userID = findUser(clientID.getLogin());
         if (userID==-1){
             userID = addUser(clientID);
@@ -106,7 +107,8 @@ public class DatabaseManager {
         int coordsID;
         int personID;
         if (existence){
-            statement = connection.prepareStatement("insert into dragon (dragon_name, coordinates, creation_date, age, weight, speaking, type, killer, owner) values (?, ?, ?, ?, ?, ?, ?, ?, ?) returning dragon_id;");
+
+            statement = connection.prepareStatement("update dragon set(dragon_name, coordinates, creation_date, age, weight, speaking, type, killer, owner)=(?, ?, ?, ?, ?, ?, ?, ?, ?) where dragon_id=?;");
 
             //запрос какое айди координат у дракона
             PreparedStatement ps = connection.prepareStatement("select coordinates from dragon where dragon_id=? returning coordinates;");
@@ -115,6 +117,7 @@ public class DatabaseManager {
             res.next();
             coordsID = updateOrAddCoordinates(dragon.getCoordinates(), true, res.getInt("coordinates"));
 
+            //запрос какое айди человека у дракона
             PreparedStatement ps2 = connection.prepareStatement("select killer from dragon where dragon_id=? returning killer;");
             ps2.setInt(1, id);
             ResultSet res2 = ps.executeQuery();
@@ -128,7 +131,7 @@ public class DatabaseManager {
             }
         }
         else {
-            statement = connection.prepareStatement("update dragon set(dragon_name, coordinates, creation_date, age, weight, speaking, type, killer, owner)=(?, ?, ?, ?, ?, ?, ?, ?, ?) where dragon_id=?;");
+            statement = connection.prepareStatement("insert into dragon (dragon_name, coordinates, creation_date, age, weight, speaking, type, killer, owner) values (?, ?, ?, ?, ?, ?, ?, ?, ?) returning dragon_id;");
             statement.setInt(10, id);
             coordsID = updateOrAddCoordinates(dragon.getCoordinates(), false, -1);
 
@@ -140,8 +143,6 @@ public class DatabaseManager {
             }
         }
 
-
-        assert statement != null;
         statement.setString(1, dragon.getName());
         statement.setInt(2, coordsID);
         statement.setDate(3, Date.valueOf(dragon.getCreationDate()));

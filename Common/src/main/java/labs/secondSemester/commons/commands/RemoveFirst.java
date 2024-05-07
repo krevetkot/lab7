@@ -5,6 +5,7 @@ import labs.secondSemester.commons.managers.CollectionManager;
 import labs.secondSemester.commons.managers.DatabaseManager;
 import labs.secondSemester.commons.network.Response;
 
+import java.sql.SQLException;
 import java.util.Scanner;
 
 /**
@@ -18,7 +19,7 @@ public class RemoveFirst extends Command {
     }
 
     @Override
-    public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws IllegalValueException {
+    public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws IllegalValueException, SQLException {
         if (CollectionManager.getCollection().isEmpty()) {
             return new Response("Коллекция пуста.");
         } else {

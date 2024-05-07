@@ -6,6 +6,7 @@ import labs.secondSemester.commons.managers.DatabaseManager;
 import labs.secondSemester.commons.network.Response;
 import labs.secondSemester.commons.objects.Dragon;
 
+import java.sql.SQLException;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
@@ -20,7 +21,7 @@ public class RemoveByID extends Command {
     }
 
     @Override
-    public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws IllegalValueException, NoSuchElementException, NumberFormatException {
+    public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws IllegalValueException, NoSuchElementException, NumberFormatException, SQLException {
         if (CollectionManager.getCollection().isEmpty()) {
             throw new NoSuchElementException("Коллекция пока что пуста");
         }
