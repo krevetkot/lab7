@@ -26,6 +26,6 @@ public class Save extends Command {
         } catch (JAXBException | IOException e) {
             System.out.println(e.getMessage());
         }
-        return null;
+        return new Response("Коллекция сохранена");
     }
 }

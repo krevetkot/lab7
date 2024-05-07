@@ -158,7 +158,7 @@ public class Client {
             int time = 1;
             int tries = 1;
             while (!serverAddress.equals(address)) {
-                if (time % 100000 == 0) {
+                if (time % 500000 == 0) {
                     connectServer(tries);
                     tries += 1;
                 }

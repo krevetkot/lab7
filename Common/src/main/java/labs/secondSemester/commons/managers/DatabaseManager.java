@@ -108,23 +108,17 @@ public class DatabaseManager {
         int personID;
         if (existence){
 
-            statement = connection.prepareStatement("update dragon set(dragon_name, coordinates, creation_date, age, weight, speaking, type, killer, owner)=(?, ?, ?, ?, ?, ?, ?, ?, ?) where dragon_id=?;");
+            statement = connection.prepareStatement("update dragon set(dragon_name, coordinates, creation_date, age, weight, speaking, type, killer, owner)=(?, ?, ?, ?, ?, ?, ?, ?, ?) where dragon_id=? returning dragon_id;");
+            statement.setInt(10, id);
 
-            //запрос какое айди координат у дракона
-            PreparedStatement ps = connection.prepareStatement("select coordinates from dragon where dragon_id=? returning coordinates;");
+            PreparedStatement ps = connection.prepareStatement("select coordinates, killer from dragon where dragon_id=?;");
             ps.setInt(1, id);
             ResultSet res = ps.executeQuery();
             res.next();
             coordsID = updateOrAddCoordinates(dragon.getCoordinates(), true, res.getInt("coordinates"));
 
-            //запрос какое айди человека у дракона
-            PreparedStatement ps2 = connection.prepareStatement("select killer from dragon where dragon_id=? returning killer;");
-            ps2.setInt(1, id);
-            ResultSet res2 = ps.executeQuery();
-            res2.next();
-
             if (dragon.getKiller()!=null){
-                personID = updateOrAddPerson(dragon.getKiller(), true, res2.getInt("killer"));
+                personID = updateOrAddPerson(dragon.getKiller(), true, res.getInt("killer"));
                 statement.setInt(8, personID);
             } else {
                 statement.setNull(8, INTEGER);
@@ -132,7 +126,7 @@ public class DatabaseManager {
         }
         else {
             statement = connection.prepareStatement("insert into dragon (dragon_name, coordinates, creation_date, age, weight, speaking, type, killer, owner) values (?, ?, ?, ?, ?, ?, ?, ?, ?) returning dragon_id;");
-            statement.setInt(10, id);
+
             coordsID = updateOrAddCoordinates(dragon.getCoordinates(), false, -1);
 
             if (dragon.getKiller()!=null){
@@ -155,7 +149,12 @@ public class DatabaseManager {
 
         ResultSet res = statement.executeQuery();
         res.next();
-        logger.info("Элемент успешно добавлен в базу данных.");
+        if (existence){
+            logger.info("Элемент c id = " + id + " обновлен.");
+        } else {
+            logger.info("Элемент успешно добавлен в базу данных.");
+        }
+
         return res.getInt("dragon_id");
     }
 

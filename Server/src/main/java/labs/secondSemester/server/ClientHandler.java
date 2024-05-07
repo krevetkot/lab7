@@ -53,12 +53,12 @@ public class ClientHandler implements Runnable{
                 Command command = readRequest(datagramPacket, buffer);
 
                 fixedPool.execute(() -> {
-                    Response response = null;
+                    Response response = new Response();
                     try {
                         logger.info("Выполнение запроса.");
                         response = runtimeManager.commandProcessing(command, false, null, databaseManager);
                     } catch (IllegalValueException e) {
-                        System.out.println(e.getMessage());
+                        response.add(e.getMessage());
                     }
 
                     Response finalResponse = response;

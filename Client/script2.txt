@@ -1,10 +1,9 @@
-add
-Katya
-1
-2
-3
-4
-false
+update 10
+Olya
+23
+34
+565
+6
+true
 AIR
 false
-show

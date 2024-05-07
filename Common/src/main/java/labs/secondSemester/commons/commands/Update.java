@@ -24,7 +24,8 @@ public class Update extends Command {
     }
 
     @Override
-    public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws IllegalValueException, NumberFormatException, NoSuchElementException {
+    public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws IllegalValueException, NumberFormatException, NoSuchElementException, SQLException {
+        Response response = new Response();
         if (CollectionManager.getCollection().isEmpty()) {
             throw new NoSuchElementException("Коллекция пока что пуста");
         }
@@ -41,15 +42,11 @@ public class Update extends Command {
 
         Dragon changedDragon = getObjectArgument();
 
-        try {
-            dbmanager.updateOrAddDragon(changedDragon, getClientID(), true, oldID);
-            changedDragon.setId(oldID);
-            CollectionManager.getCollection().set(index, changedDragon);
-            Console.print("Элемент с ID " + id + " обновлен", fileMode);
-        } catch (SQLException e) {
-            Console.print(e.getMessage(), false);
-        }
+        dbmanager.updateOrAddDragon(changedDragon, getClientID(), true, oldID);
+        changedDragon.setId(oldID);
+        CollectionManager.getCollection().set(index, changedDragon);
+        response.add("Элемент с ID " + id + " обновлен");
 
-        return null;
+        return response;
     }
 }
