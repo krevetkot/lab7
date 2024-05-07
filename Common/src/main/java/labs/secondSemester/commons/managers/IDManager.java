@@ -12,27 +12,6 @@ import java.util.ArrayList;
 public abstract class IDManager {
 
     /**
-     * Генерирует восьмизначный идентификатор для дракона.
-     */
-    public static int generateID() {
-        ArrayList<Dragon> collection = CollectionManager.getCollection();
-        boolean flag = true;
-
-        while (true) {
-            int res = (int) (Math.random() * 89999999 + 10000000);
-            for (Dragon element : collection) {
-                if (element.getId() == res) {
-                    flag = false;
-                    break;
-                }
-            }
-            if (flag) {
-                return res;
-            }
-        }
-    }
-
-    /**
      * Проверяет паспортные данные человека на уникальность.
      *
      * @param passportID - паспортные данные человека

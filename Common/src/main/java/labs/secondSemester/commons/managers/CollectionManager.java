@@ -69,28 +69,6 @@ public class CollectionManager {
         }
 
         br.close();
-
-    }
-
-    /**
-     * Сохраняет коллекцию в файл.
-     *
-     * @throws IOException   - ошибка открытия файла/доступа к файлу/отсутствие файла/невалидный путь
-     * @throws JAXBException - ошибка парсинга
-     */
-    public static void saveCollection() throws JAXBException, IOException {
-        DragonsForParsing dragons = new DragonsForParsing();
-        dragons.setCollectionOfDragons(collectionOfDragons);
-
-        JAXBContext jaxbContext = JAXBContext.newInstance(DragonsForParsing.class);
-        Marshaller marshaller = jaxbContext.createMarshaller();
-        marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-        File file = new File(fileName);
-
-        marshaller.marshal(dragons, new OutputStreamWriter(Files.newOutputStream(file.toPath())));
-
-        System.out.println("Коллекция сохранена.");
-
     }
 
     /**
@@ -112,6 +90,15 @@ public class CollectionManager {
      */
     public static Dragon getById(long id) {
         return collectionOfDragons.stream().filter(x -> x.getId() == id).findAny().orElse(null);
+    }
+
+    public static boolean contains(Dragon dragon){
+        for (Dragon element: collectionOfDragons){
+            if (dragon.equals(element)){
+                return true;
+            }
+        }
+        return false;
     }
 
 }

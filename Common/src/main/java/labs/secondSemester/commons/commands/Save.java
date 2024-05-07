@@ -21,11 +21,6 @@ public class Save extends Command {
 
     @Override
     public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws IllegalValueException {
-        try {
-            CollectionManager.saveCollection();
-        } catch (JAXBException | IOException e) {
-            System.out.println(e.getMessage());
-        }
-        return new Response("Коллекция сохранена");
+        return null;
     }
 }

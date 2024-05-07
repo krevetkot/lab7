@@ -99,9 +99,13 @@ public class Client {
                 continue;
             }
 
-            Response response = receive(buffer);
-            for (String element : response.getResponse()) {
-                System.out.println(element);
+            try {
+                Response response = receive(buffer);
+                for (String element : response.getResponse()) {
+                    System.out.println(element);
+                }
+            } catch (Exception e){
+                System.out.println("Проблемы с ответом от сервера.");
             }
         }
     }

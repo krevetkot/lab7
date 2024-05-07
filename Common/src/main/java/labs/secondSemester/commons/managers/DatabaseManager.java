@@ -144,7 +144,6 @@ public class DatabaseManager {
         statement.setLong(5, dragon.getWeight());
         statement.setBoolean(6, dragon.getSpeaking());
         statement.setString(7, String.valueOf(dragon.getType()));
-
         statement.setInt(9, userID);
 
         ResultSet res = statement.executeQuery();
@@ -154,7 +153,6 @@ public class DatabaseManager {
         } else {
             logger.info("Элемент успешно добавлен в базу данных.");
         }
-
         return res.getInt("dragon_id");
     }
 
@@ -224,6 +222,4 @@ public class DatabaseManager {
             deleteStatement.executeUpdate();
             logger.info("Объект с id = " + id + " успешно удален.");
     }
-
-
 }

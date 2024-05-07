@@ -86,7 +86,6 @@ public class Dragon implements Comparable<Dragon>, Serializable {
      * @param killer      - убийца дракона
      **/
     public Dragon(String name, Coordinates coordinates, Long age, Long weight, boolean speaking, DragonType type, Person killer, String owner) {
-        this.id = IDManager.generateID();
         this.name = name;
         this.coordinates = coordinates;
         this.creationDate = LocalDate.now();
@@ -174,8 +173,7 @@ public class Dragon implements Comparable<Dragon>, Serializable {
         Dragon dragon = (Dragon) obj;
         if (this.killer == null && dragon.killer == null) {
             if (this.type == null && dragon.type == null) {
-                return this.id == dragon.getId()
-                        && this.name.equals(dragon.getName())
+                return this.name.equals(dragon.getName())
                         && this.coordinates.equals(dragon.getCoordinates())
                         && this.creationDate.equals(dragon.getCreationDate())
                         && Objects.equals(this.age, dragon.getAge())
@@ -185,8 +183,7 @@ public class Dragon implements Comparable<Dragon>, Serializable {
             if (this.type == null || dragon.type == null) {
                 return false;
             }
-            return this.id == dragon.getId()
-                    && this.name.equals(dragon.getName())
+            return this.name.equals(dragon.getName())
                     && this.coordinates.equals(dragon.getCoordinates())
                     && this.creationDate.equals(dragon.getCreationDate())
                     && Objects.equals(this.age, dragon.getAge())
@@ -196,8 +193,7 @@ public class Dragon implements Comparable<Dragon>, Serializable {
 
         }
         if (this.type == null && dragon.type == null) {
-            return this.id == dragon.getId()
-                    && this.name.equals(dragon.getName())
+            return this.name.equals(dragon.getName())
                     && this.coordinates.equals(dragon.getCoordinates())
                     && this.creationDate.equals(dragon.getCreationDate())
                     && Objects.equals(this.age, dragon.getAge())
@@ -211,8 +207,7 @@ public class Dragon implements Comparable<Dragon>, Serializable {
         if (this.killer == null || dragon.killer == null) {
             return false;
         }
-        return this.id == dragon.getId()
-                && this.name.equals(dragon.getName())
+        return this.name.equals(dragon.getName())
                 && this.coordinates.equals(dragon.getCoordinates())
                 && this.creationDate.equals(dragon.getCreationDate())
                 && Objects.equals(this.age, dragon.getAge())

@@ -24,7 +24,7 @@ public class Add extends Command {
     public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws IllegalValueException, SQLException {
         Response response = new Response();
         Dragon buildedDragon = getObjectArgument();
-        if (!CollectionManager.getCollection().contains(buildedDragon)) {
+        if (CollectionManager.contains(buildedDragon)) {
             int dragonID = dbmanager.updateOrAddDragon(buildedDragon, getClientID(), false, -1);
             buildedDragon.setId(dragonID);
             CollectionManager.getCollection().add(buildedDragon);
