@@ -9,17 +9,23 @@ import labs.secondSemester.commons.objects.Dragon;
 import labs.secondSemester.commons.objects.forms.DragonForm;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 public class Client {
@@ -40,7 +46,6 @@ public class Client {
     }
 
     public Client(String ip) throws IOException {
-
         fileManager = new FileManager(this);
         this.ip = ip;
     }
@@ -50,12 +55,35 @@ public class Client {
 
         connectServer(1);
         ByteBuffer buffer = ByteBuffer.allocate(BUFFER_LENGTH);
-        String request = null;
         Scanner scanner = new Scanner(System.in);
-        clientID = new ClientIdentification("Kseniya", "111");
+
+        System.out.println("Подключение к серверу налажено.");
+        String request = null;
         CommandFactory commandFactory = new CommandFactory(clientID);
-//            singIn(scanner);
-        //нужна какая-то проверка, что такой чел есть, но ее позже
+
+        System.out.println("Необходимо выполнить вход в аккаунт.");
+        System.out.println("Если аккаунта нет, он будет автоматически создан.");
+
+        while (true){
+            singIn(scanner);
+            try {
+                Command command = commandFactory.buildCommand("login_or_sign_up");
+                command.setClientID(clientID);
+                send(command);
+                Response response = receive(buffer);
+                if (response.getResponse().size()==2){
+                    System.out.println(response.getResponse().get(1));
+                    if (response.getResponse().get(0).equals("yes")){
+                        break;
+                    } else {
+                        System.out.println("Повторная попытка входа.");
+                    }
+                }
+            } catch (IllegalValueException e) {
+                System.out.println("Повторная попытка входа.");
+            }
+        }
+
         System.out.println(clientID.getLogin() +
                 ", приветствуем Вас в приложении по управлению коллекцией! Введите 'help' для вывода доступных команд.");
 
@@ -81,7 +109,6 @@ public class Client {
                         Console.print(e.getMessage(), false);
                     }
                 }
-
                 if (command instanceof Exit) {
                     command.execute(null, false, null, null);
 
@@ -111,23 +138,49 @@ public class Client {
     }
 
     public void singIn(Scanner scanner){
-        System.out.println("Введите имя пользователя: ");
+        System.out.print("Введите имя пользователя: ");
         String login;
         while (true) {
             login = scanner.nextLine().trim();
-            if (login.isBlank()) {
-                System.out.println("Имя пользователя не может быть пустым! Попробуйте еще раз.");
+            Pattern pattern = Pattern.compile("\\w+[^а-я]+\\n*$", Pattern.CASE_INSENSITIVE);
+            Matcher matcher = pattern.matcher(login);
+            if (!matcher.find()){
+                System.out.println("Логин должен быть непустым и состоять только из латинских букв, цифр и специальных знаков. Попробуйте еще раз.");
             } else break;
         }
-        System.out.println("Введите пароль: ");
+        System.out.print("Введите пароль: ");
+
         String password;
+        java.io.Console console = System.console();
         while (true) {
-            password = scanner.nextLine().trim();
-            if (password.isBlank()) {
-                System.out.println("Пароль не может быть пустым! Попробуйте еще раз.");
+            if (console != null){
+                char[] symbols = console.readPassword();
+                password = String.valueOf(symbols);
+            } else {
+                password = scanner.nextLine();
+            }
+            Pattern pattern = Pattern.compile("\\w+[^а-я]+\\n*$", Pattern.CASE_INSENSITIVE);
+            Matcher matcher = pattern.matcher(password);
+            if (!matcher.find()){
+                System.out.println("Пароль должен быть непустым и состоять только из латинских букв, цифр и специальных знаков. Попробуйте еще раз.");
             } else break;
         }
-        clientID = new ClientIdentification(login, password);
+        clientID = new ClientIdentification(login, encryptStringSHA512(password));
+    }
+
+    public String encryptStringSHA512(String string){
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-512");
+            byte[] digest = md.digest(string.getBytes(StandardCharsets.UTF_8));
+            BigInteger numRepresentation = new BigInteger(1, digest);
+            StringBuilder hashedString = new StringBuilder(numRepresentation.toString(16));
+            while (hashedString.length()<32){
+                hashedString.insert(0, "0");
+            }
+            return hashedString.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 

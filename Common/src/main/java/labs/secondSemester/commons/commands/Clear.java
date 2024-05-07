@@ -22,8 +22,13 @@ public class Clear extends Command {
         if (CollectionManager.getCollection().isEmpty()) {
             return new Response("Коллекция и так пуста.");
         } else {
-            CollectionManager.getCollection().clear();
-            return new Response("Коллекция очищена.");
+            for (int i=0; i<CollectionManager.getCollection().size(); i++){
+                if (getClientID().getLogin().equals(CollectionManager.getCollection().get(i).getOwner())){
+                    CollectionManager.getCollection().remove(i);
+                }
+            }
+//            CollectionManager.getCollection().clear();
+            return new Response("Коллекция очищена. Удалены только элементы, принадлежащие Вам.");
         }
     }
 }

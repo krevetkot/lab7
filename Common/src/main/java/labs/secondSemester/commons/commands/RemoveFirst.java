@@ -22,7 +22,11 @@ public class RemoveFirst extends Command {
     public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws IllegalValueException, SQLException {
         if (CollectionManager.getCollection().isEmpty()) {
             return new Response("Коллекция пуста.");
-        } else {
+        }
+        if (!getClientID().getLogin().equals(CollectionManager.getCollection().get(0).getOwner())){
+            return new Response("Отказано в доступе: Вы не владелец элемента.");
+        }
+        else {
             dbmanager.removeByID(CollectionManager.getCollection().get(0).getId());
             CollectionManager.getCollection().remove(0);
             return new Response("Первый элемент в коллекции удален.");

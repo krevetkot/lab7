@@ -180,6 +180,19 @@ public class DatabaseManager {
         return -1;
     }
 
+    public boolean checkPassword(ClientIdentification clientID){
+        try {
+        PreparedStatement ps = connection.prepareStatement("select password from users where (users.login =?);");
+        ps.setString(1, clientID.getLogin());
+        ResultSet res = ps.executeQuery();
+        res.next();
+        return clientID.getPassword().equals(res.getString("password"));
+        } catch (SQLException e) {
+            logger.error(e.getMessage());
+            return false;
+        }
+    }
+
     public Dragon parse(ResultSet result) throws SQLException, FailedBuildingException {
         int dragonId = result.getInt("dragon_id");
         String dragonName = result.getString("dragon_name");

@@ -36,6 +36,9 @@ public class Update extends Command {
         if (oldDragon == null) {
             throw new NoSuchElementException("Нет элемента с таким ID.");
         }
+        if (!getClientID().getLogin().equals(oldDragon.getOwner())){
+            return new Response("Отказано в доступе: Вы не владелец элемента.");
+        }
 
         int index = CollectionManager.getCollection().indexOf(oldDragon);
         int oldID = oldDragon.getId();

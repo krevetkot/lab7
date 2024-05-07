@@ -40,5 +40,6 @@ public class CommandManager implements Serializable {
         commandMap.put("reorder", new Reorder());
         commandMap.put("max_by_killer", new MaxByKiller());
         commandMap.put("filter_less_than_killer", new FilterLessThanKiller());
+        commandMap.put("login_or_sign_up", new LoginOrSignUp());
     }
 }
