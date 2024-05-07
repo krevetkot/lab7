@@ -9,6 +9,7 @@ import labs.secondSemester.commons.network.Response;
 import labs.secondSemester.commons.objects.Dragon;
 import labs.secondSemester.commons.objects.forms.DragonForm;
 
+import java.nio.file.AccessDeniedException;
 import java.sql.SQLException;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
@@ -48,14 +49,13 @@ public class InsertAt extends Command {
                 int dragonID = dbmanager.updateOrAddDragon(buildedDragon, getClientID(), false, -1);
                 buildedDragon.setId(dragonID);
                 CollectionManager.getCollection().add(index, buildedDragon);
-                Console.print("Спасибо, ваши данные приняты!", fileMode);
+                return new Response("Спасибо, ваши данные приняты!");
             } else {
-                Console.print("Такой дракон уже есть в коллекции.", false);
+                return new Response("Такой дракон уже есть в коллекции.");
             }
-        } catch (SQLException e) {
-            Console.print(e.getMessage(), false);
+        } catch (SQLException | AccessDeniedException e) {
+            return new Response(e.getMessage());
         }
-        return null;
     }
 
 }

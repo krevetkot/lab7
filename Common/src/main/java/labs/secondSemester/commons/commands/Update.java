@@ -9,6 +9,7 @@ import labs.secondSemester.commons.network.Response;
 import labs.secondSemester.commons.objects.Dragon;
 import labs.secondSemester.commons.objects.forms.DragonForm;
 
+import java.nio.file.AccessDeniedException;
 import java.sql.SQLException;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
@@ -45,7 +46,11 @@ public class Update extends Command {
 
         Dragon changedDragon = getObjectArgument();
 
-        dbmanager.updateOrAddDragon(changedDragon, getClientID(), true, oldID);
+        try {
+            dbmanager.updateOrAddDragon(changedDragon, getClientID(), true, oldID);
+        } catch (AccessDeniedException e) {
+            return new Response(e.getMessage());
+        }
         changedDragon.setId(oldID);
         CollectionManager.getCollection().set(index, changedDragon);
         response.add("Элемент с ID " + id + " обновлен");

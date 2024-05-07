@@ -75,10 +75,9 @@ public class Client {
                     System.out.println(response.getResponse().get(1));
                     if (response.getResponse().get(0).equals("yes")){
                         break;
-                    } else {
-                        System.out.println("Повторная попытка входа.");
                     }
                 }
+                System.out.println("Повторная попытка входа.");
             } catch (IllegalValueException e) {
                 System.out.println("Повторная попытка входа.");
             }

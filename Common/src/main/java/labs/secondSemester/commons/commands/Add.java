@@ -6,6 +6,7 @@ import labs.secondSemester.commons.managers.DatabaseManager;
 import labs.secondSemester.commons.network.Response;
 import labs.secondSemester.commons.objects.Dragon;
 
+import java.nio.file.AccessDeniedException;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.Scanner;
@@ -25,7 +26,13 @@ public class Add extends Command {
         Response response = new Response();
         Dragon buildedDragon = getObjectArgument();
         if (CollectionManager.contains(buildedDragon)) {
-            int dragonID = dbmanager.updateOrAddDragon(buildedDragon, getClientID(), false, -1);
+            int dragonID = 0;
+            try {
+                dragonID = dbmanager.updateOrAddDragon(buildedDragon, getClientID(), false, -1);
+            } catch (AccessDeniedException e) {
+                response.add(e.getMessage());
+                return response;
+            }
             buildedDragon.setId(dragonID);
             CollectionManager.getCollection().add(buildedDragon);
             Collections.sort(CollectionManager.getCollection());

@@ -6,6 +6,7 @@ import labs.secondSemester.commons.objects.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.nio.file.AccessDeniedException;
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -52,7 +53,7 @@ public class DatabaseManager {
         Collections.sort(collection);
     }
 
-    public void saveCollection() throws SQLException {
+    public void saveCollection() throws SQLException, AccessDeniedException {
         for (Dragon dragon: CollectionManager.getCollection()){
             updateOrAddDragon(dragon, new ClientIdentification("Kseniya", "12345"), false, -1);
         }
@@ -95,12 +96,13 @@ public class DatabaseManager {
         return res.getInt("person_id");
     }
 
-    public int updateOrAddDragon(Dragon dragon, ClientIdentification clientID, boolean existence, int id) throws SQLException {
+    public int updateOrAddDragon(Dragon dragon, ClientIdentification clientID, boolean existence, int id) throws SQLException, AccessDeniedException {
         //если existence == true -> update; false -> add
         //реальное id указывается только если existence=true; иначе -1
+
         int userID = findUser(clientID.getLogin());
         if (userID==-1){
-            userID = addUser(clientID);
+            throw new AccessDeniedException("Отказано в доступе.");
         }
 
         PreparedStatement statement;
@@ -157,10 +159,9 @@ public class DatabaseManager {
     }
 
     public int addUser(ClientIdentification clientID) throws SQLException {
-        PreparedStatement addStatement = connection.prepareStatement("insert into users(login, password) values (?, ?);");
+        PreparedStatement addStatement = connection.prepareStatement("insert into users(login, password) values (?, ?) returning user_id;");
         addStatement.setString(1, clientID.getLogin());
         addStatement.setString(2, clientID.getPassword());
-        addStatement.executeUpdate();
         ResultSet res = addStatement.executeQuery();
         res.next();
         return res.getInt("user_id");
