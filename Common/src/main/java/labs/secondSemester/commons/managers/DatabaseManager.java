@@ -1,10 +1,7 @@
 package labs.secondSemester.commons.managers;
 
 import labs.secondSemester.commons.exceptions.FailedBuildingException;
-import labs.secondSemester.commons.managers.CollectionManager;
-import labs.secondSemester.commons.managers.Validator;
 import labs.secondSemester.commons.network.ClientIdentification;
-import labs.secondSemester.commons.network.Header;
 import labs.secondSemester.commons.objects.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -57,55 +54,105 @@ public class DatabaseManager {
 
     public void saveCollection() throws SQLException {
         for (Dragon dragon: CollectionManager.getCollection()){
-            addDragon(dragon, new ClientIdentification("Kseniya", "12345"));
+            updateOrAddDragon(dragon, new ClientIdentification("Kseniya", "12345"), false, -1);
         }
     }
 
-    public int addCoordinates(Coordinates coords) throws SQLException {
-        PreparedStatement addStatement = connection.prepareStatement("insert into coordinates(x, y) values (?, ?) returning coordinates_id;");
-        addStatement.setLong(1, coords.getX());
-        addStatement.setFloat(2, coords.getY());
-//        addStatement.executeUpdate();
-        ResultSet res = addStatement.executeQuery();
+    public int updateOrAddCoordinates(Coordinates coords, boolean existence, int id) throws SQLException {
+        PreparedStatement statement;
+        if (existence){
+            statement = connection.prepareStatement("insert into coordinates(x, y) values (?, ?) returning coordinates_id;");
+        }
+        else {
+            statement = connection.prepareStatement("update coordinates set(x, y)=(?, ?) where coordinates_id=? returning coordinates_id;");
+            statement.setInt(3, id);
+        }
+
+        statement.setLong(1, coords.getX());
+        statement.setFloat(2, coords.getY());
+        ResultSet res = statement.executeQuery();
         res.next();
         return res.getInt("coordinates_id");
     }
 
-    public int addPerson(Person person) throws SQLException {
-        PreparedStatement addStatement = connection.prepareStatement("insert into person (person_name, passport_id, eye_color, hair_color, nationality, countKilledDragons) values (?, ?, ?, ?, ?, ?) returning person_id;");
-        addStatement.setString(1, person.getName());
-        addStatement.setString(2, person.getPassportID());
-        addStatement.setString(3, String.valueOf(person.getEyeColor()));
-        addStatement.setString(4, String.valueOf(person.getHairColor()));
-        addStatement.setString(5, String.valueOf(person.getNationality()));
-        addStatement.setLong(6, person.getCountKilledDragons());
-        ResultSet res = addStatement.executeQuery();
+    public int updateOrAddPerson(Person person, boolean existence, int id) throws SQLException {
+        PreparedStatement statement;
+        if (existence){
+            statement = connection.prepareStatement("insert into person (person_name, passport_id, eye_color, hair_color, nationality, countKilledDragons) values (?, ?, ?, ?, ?, ?) returning person_id;");
+        }
+        else {
+            statement = connection.prepareStatement("update coordinates set(person_name, passport_id, eye_color, hair_color, nationality, countKilledDragons)=(?, ?, ?, ?, ?, ?) where person_id=? returning coordinates_id;");
+            statement.setInt(7, id);
+        }
+        statement.setString(1, person.getName());
+        statement.setString(2, person.getPassportID());
+        statement.setString(3, String.valueOf(person.getEyeColor()));
+        statement.setString(4, String.valueOf(person.getHairColor()));
+        statement.setString(5, String.valueOf(person.getNationality()));
+        statement.setLong(6, person.getCountKilledDragons());
+        ResultSet res = statement.executeQuery();
         res.next();
         return res.getInt("person_id");
     }
 
-    public int addDragon(Dragon dragon, ClientIdentification clientID) throws SQLException {
+    public int updateOrAddDragon(Dragon dragon, ClientIdentification clientID, boolean existence, int id) throws SQLException {
+        //если existence == true -> update; false -> add
         int userID = findUser(clientID.getLogin());
         if (userID==-1){
-             userID = addUser(clientID);
+            userID = addUser(clientID);
         }
-        int coordsID = addCoordinates(dragon.getCoordinates());
-        PreparedStatement addStatement = connection.prepareStatement("insert into dragon (dragon_name, coordinates, creation_date, age, weight, speaking, type, killer, owner) values (?, ?, ?, ?, ?, ?, ?, ?, ?) returning dragon_id;");
-        addStatement.setString(1, dragon.getName());
-        addStatement.setInt(2, coordsID);
-        addStatement.setDate(3, Date.valueOf(dragon.getCreationDate()));
-        addStatement.setLong(4, dragon.getAge());
-        addStatement.setLong(5, dragon.getWeight());
-        addStatement.setBoolean(6, dragon.getSpeaking());
-        addStatement.setString(7, String.valueOf(dragon.getType()));
-        if (dragon.getKiller()!=null){
-            int personID = addPerson(dragon.getKiller());
-            addStatement.setInt(8, personID);
-        } else {
-            addStatement.setNull(8, INTEGER);
+
+        PreparedStatement statement;
+        int coordsID;
+        int personID;
+        if (existence){
+            statement = connection.prepareStatement("insert into dragon (dragon_name, coordinates, creation_date, age, weight, speaking, type, killer, owner) values (?, ?, ?, ?, ?, ?, ?, ?, ?) returning dragon_id;");
+
+            //запрос какое айди координат у дракона
+            PreparedStatement ps = connection.prepareStatement("select coordinates from dragon where dragon_id=? returning coordinates;");
+            ps.setInt(1, id);
+            ResultSet res = ps.executeQuery();
+            res.next();
+            coordsID = updateOrAddCoordinates(dragon.getCoordinates(), true, res.getInt("coordinates"));
+
+            PreparedStatement ps2 = connection.prepareStatement("select killer from dragon where dragon_id=? returning killer;");
+            ps2.setInt(1, id);
+            ResultSet res2 = ps.executeQuery();
+            res2.next();
+
+            if (dragon.getKiller()!=null){
+                personID = updateOrAddPerson(dragon.getKiller(), true, res2.getInt("killer"));
+                statement.setInt(8, personID);
+            } else {
+                statement.setNull(8, INTEGER);
+            }
         }
-        addStatement.setInt(9, userID);
-        ResultSet res = addStatement.executeQuery();
+        else {
+            statement = connection.prepareStatement("update dragon set(dragon_name, coordinates, creation_date, age, weight, speaking, type, killer, owner)=(?, ?, ?, ?, ?, ?, ?, ?, ?) where dragon_id=?;");
+            statement.setInt(10, id);
+            coordsID = updateOrAddCoordinates(dragon.getCoordinates(), false, -1);
+
+            if (dragon.getKiller()!=null){
+                personID = updateOrAddPerson(dragon.getKiller(), false, -1);
+                statement.setInt(8, personID);
+            } else {
+                statement.setNull(8, INTEGER);
+            }
+        }
+
+
+        assert statement != null;
+        statement.setString(1, dragon.getName());
+        statement.setInt(2, coordsID);
+        statement.setDate(3, Date.valueOf(dragon.getCreationDate()));
+        statement.setLong(4, dragon.getAge());
+        statement.setLong(5, dragon.getWeight());
+        statement.setBoolean(6, dragon.getSpeaking());
+        statement.setString(7, String.valueOf(dragon.getType()));
+
+        statement.setInt(9, userID);
+
+        ResultSet res = statement.executeQuery();
         res.next();
         logger.info("Элемент успешно добавлен в базу данных.");
         return res.getInt("dragon_id");
@@ -171,15 +218,12 @@ public class DatabaseManager {
         return dragon;
     }
 
-    public boolean removeByID(int id){
-        try {
+    public void removeByID(int id) throws SQLException {
             PreparedStatement deleteStatement = connection.prepareStatement("delete from dragon where (dragon_id=?);");
             deleteStatement.setInt(1, id);
             deleteStatement.executeUpdate();
             logger.info("Объект с id = " + id + " успешно удален.");
-            return true;
-        } catch (SQLException e) {
-            return false;
-        }
     }
+
+
 }
