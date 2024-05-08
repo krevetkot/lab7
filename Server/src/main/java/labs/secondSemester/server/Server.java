@@ -36,7 +36,7 @@ public class Server {
         datagramSocket = new DatagramSocket(PORT);
     }
 
-    public void start() throws IOException {
+    public void start() {
         logger.info("Запуск сервера.");
 
         try {
@@ -66,10 +66,9 @@ public class Server {
             System.exit(-1);
         }
 
-        while (true) {
-            new Thread(new ClientHandler(datagramSocket, databaseManager)).start();
-        }
-
+//        while (true) {
+        new Thread(new ClientHandler(datagramSocket, databaseManager)).start();
+//        }
     }
 
     public void BDConnect(){

@@ -29,7 +29,7 @@ public class ClientHandler implements Runnable{
     private final RuntimeManager runtimeManager;
     private final int BUFFER_LENGTH = 10240;
     private final ExecutorService fixedPool = Executors.newFixedThreadPool(10);
-    private DatabaseManager databaseManager;
+    private final DatabaseManager databaseManager;
     private static final Logger logger = LogManager.getLogger();
 
 
@@ -47,6 +47,7 @@ public class ClientHandler implements Runnable{
     public void run() {
         while (true) {
             try {
+                logger.info("thread: " + Thread.currentThread().getName() + " запущен.");
                 byte[] buffer = new byte[BUFFER_LENGTH];
                 DatagramPacket datagramPacket = new DatagramPacket(buffer, buffer.length, datagramSocket.getInetAddress(), PORT);
 
@@ -107,8 +108,9 @@ public class ClientHandler implements Runnable{
     }
 
     public <T> T readRequest(DatagramPacket datagramPacket, byte[] buffer) throws IOException {
-//        logger.info("Чтение запроса.");
+        logger.info("Получение запроса.");
         datagramSocket.receive(datagramPacket);
+        logger.info("Запрос прочитан.");
         Packet packet = serializer.deserialize(buffer);
         Header header = packet.getHeader();
         int countOfPieces = header.getCount();
