@@ -47,7 +47,6 @@ public class ClientHandler implements Runnable{
     public void run() {
         while (true) {
             try {
-                logger.info("thread: " + Thread.currentThread().getName() + " запущен.");
                 byte[] buffer = new byte[BUFFER_LENGTH];
                 DatagramPacket datagramPacket = new DatagramPacket(buffer, buffer.length, datagramSocket.getInetAddress(), PORT);
 
@@ -56,7 +55,7 @@ public class ClientHandler implements Runnable{
                 fixedPool.execute(() -> {
                     Response response = new Response();
                     try {
-                        logger.info("Выполнение запроса.");
+                        logger.info("Выполнение запроса. " + Thread.currentThread().getName());
                         response = runtimeManager.commandProcessing(command, false, null, databaseManager);
                     } catch (IllegalValueException e) {
                         response.add(e.getMessage());
@@ -65,7 +64,7 @@ public class ClientHandler implements Runnable{
                     Response finalResponse = response;
                     forkJoinPool.execute(() -> {
                         try {
-                            logger.info("Отправка ответа.");
+                            logger.info("Отправка ответа. " + Thread.currentThread().getName());
                             sendResponse(finalResponse, datagramPacket.getSocketAddress());
                         } catch (IOException e) {
                             throw new RuntimeException(e);
@@ -108,9 +107,9 @@ public class ClientHandler implements Runnable{
     }
 
     public <T> T readRequest(DatagramPacket datagramPacket, byte[] buffer) throws IOException {
-        logger.info("Получение запроса.");
+        logger.info("Получение запроса. " + Thread.currentThread().getName());
         datagramSocket.receive(datagramPacket);
-        logger.info("Запрос прочитан.");
+        logger.info("Запрос прочитан. "+ Thread.currentThread().getName());
         Packet packet = serializer.deserialize(buffer);
         Header header = packet.getHeader();
         int countOfPieces = header.getCount();
