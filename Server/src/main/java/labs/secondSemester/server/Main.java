@@ -13,6 +13,14 @@ public class Main {
     public static void main(String[] args) {
 
         try {
+            Class.forName("org.postgresql.Driver");
+        } catch (ClassNotFoundException e) {
+            System.out.println("Проблемы с драйвером. Ошибка: " + e.getMessage());
+            System.out.println("Завершение работы.");
+            System.exit(-1);
+        }
+
+        try {
             Server server = new Server();
             server.start();
         }

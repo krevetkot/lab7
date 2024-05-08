@@ -15,11 +15,13 @@ import java.util.Collections;
 import static java.sql.Types.INTEGER;
 
 public class DatabaseManager {
+//    private String URL = "jdbc:postgresql://pg:5432/studs";
     private String URL = "jdbc:postgresql://localhost:9876/studs";
     private String user;
-    private String password;
+    private final String password;
     private Connection connection;
-    private static final Logger logger = LogManager.getLogger();
+    private boolean isConnect = false;
+    private static final Logger logger = LogManager.getLogger(DatabaseManager.class);
 
     public DatabaseManager(String user, String password){
         this.user = user;
@@ -29,11 +31,22 @@ public class DatabaseManager {
     public void connect(){
         try {
             connection = DriverManager.getConnection(URL, user, password);
+            isConnect = true;
             logger.info("Соединение с базой данных установлено.");
 
         } catch (SQLException e) {
+            isConnect = false;
             logger.error("Соединение с базой данных не установлено. Ошибка: " + e.getMessage());
             System.exit(-1);
+        }
+    }
+
+    public void closeConnection(){
+        try {
+            connection.close();
+            isConnect = false;
+        } catch (SQLException e) {
+            logger.error(e.getMessage());
         }
     }
 

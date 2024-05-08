@@ -48,6 +48,7 @@ public class Client {
     public Client(String ip) throws IOException {
         fileManager = new FileManager(this);
         this.ip = ip;
+        clientID = new ClientIdentification("", "");
     }
 
 
@@ -61,30 +62,30 @@ public class Client {
         String request = null;
         CommandFactory commandFactory = new CommandFactory(clientID);
 
-        System.out.println("Необходимо выполнить вход в аккаунт.");
-        System.out.println("Если аккаунта нет, он будет автоматически создан.");
+//        System.out.println("Необходимо выполнить вход в аккаунт.");
+//        System.out.println("Если аккаунта нет, он будет автоматически создан.");
 
-        while (true){
-            singIn(scanner);
-            try {
-                Command command = commandFactory.buildCommand("login_or_sign_up");
-                command.setClientID(clientID);
-                send(command);
-                Response response = receive(buffer);
-                if (response.getResponse().size()==2){
-                    System.out.println(response.getResponse().get(1));
-                    if (response.getResponse().get(0).equals("yes")){
-                        break;
-                    }
-                }
-                System.out.println("Повторная попытка входа.");
-            } catch (IllegalValueException e) {
-                System.out.println("Повторная попытка входа.");
-            }
-        }
+//        while (true){
+//            singIn(scanner);
+//            try {
+//                Command command = commandFactory.buildCommand("login_or_sign_up");
+//                commandFactory.setClientID(clientID);
+//                send(command);
+//                Response response = receive(buffer);
+//                if (response.getResponse().size()==2){
+//                    System.out.println(response.getResponse().get(1));
+//                    if (response.getResponse().get(0).equals("yes")){
+//                        break;
+//                    }
+//                }
+//                System.out.println("Повторная попытка входа.");
+//            } catch (IllegalValueException e) {
+//                System.out.println("Повторная попытка входа.");
+//            }
+//        }
 
-        System.out.println(clientID.getLogin() +
-                ", приветствуем Вас в приложении по управлению коллекцией! Введите 'help' для вывода доступных команд.");
+        System.out.println("Приветствуем Вас в приложении по управлению коллекцией! Введите 'help' для вывода доступных команд.");
+        System.out.println("Необходимо зарегистрироваться или выполнить вход в аккаунт. Это можно сделать командами sign_up и login.");
 
         while (true) {
             try {
@@ -98,6 +99,21 @@ public class Client {
 
             try {
                 Command command = commandFactory.buildCommand(request);
+                if (!clientID.isAuthorized()){
+                    if (command instanceof SignUp){
+                        clientID = askLoginPassword(scanner);
+
+                    }
+                    else if (command instanceof Login){
+                        askLoginPassword(scanner);
+                        send(command);
+                        receive(buffer);
+
+                    } else {
+                        System.out.println("Необходимо зарегистрироваться или выполнить вход в аккаунт. Это можно сделать командами sign_up и login.");
+                        continue;
+                    }
+                }
                 if (command instanceof Add || command instanceof InsertAt || command instanceof Update) {
                     DragonForm newDragon = new DragonForm();
                     try {
@@ -136,7 +152,7 @@ public class Client {
         }
     }
 
-    public void singIn(Scanner scanner){
+    public ClientIdentification askLoginPassword(Scanner scanner){
         System.out.print("Введите имя пользователя: ");
         String login;
         while (true) {
@@ -164,7 +180,7 @@ public class Client {
                 System.out.println("Пароль должен быть непустым и состоять только из латинских букв, цифр и специальных знаков. Попробуйте еще раз.");
             } else break;
         }
-        clientID = new ClientIdentification(login, encryptStringSHA512(password));
+        return new ClientIdentification(login, encryptStringSHA512(password));
     }
 
     public String encryptStringSHA512(String string){

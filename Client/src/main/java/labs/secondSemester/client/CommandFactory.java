@@ -10,9 +10,11 @@ import labs.secondSemester.commons.exceptions.IllegalValueException;
 import labs.secondSemester.commons.managers.CommandManager;
 import labs.secondSemester.commons.managers.Validator;
 import labs.secondSemester.commons.network.ClientIdentification;
+import lombok.Setter;
 
 import java.util.Arrays;
 
+@Setter
 public class CommandFactory {
     private final CommandManager commandManager = new CommandManager();
     private ClientIdentification clientID;
