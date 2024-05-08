@@ -60,8 +60,9 @@ public class Server {
 
         try {
             databaseManager.loadCollection();
+            logger.info("Коллекция успешно загружена.");
         } catch (SQLException | FailedBuildingException e) {
-            logger.error(e.getMessage());
+            logger.error("Коллекция не загружена. Ошибка: " + e.getMessage());
             System.exit(-1);
         }
 
