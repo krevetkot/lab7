@@ -29,7 +29,7 @@ public class ClientHandler implements Runnable{
     private final RuntimeManager runtimeManager;
     private final int BUFFER_LENGTH = 10240;
     private final ExecutorService fixedPool = Executors.newFixedThreadPool(10);
-    private DatabaseManager databaseManager;
+    private final DatabaseManager databaseManager;
     private static final Logger logger = LogManager.getLogger(ClientHandler.class);
 
 
@@ -55,8 +55,8 @@ public class ClientHandler implements Runnable{
                 fixedPool.execute(() -> {
                     Response response = new Response();
                     try {
-                        logger.info("Соединение с базой данных.");
-                        databaseManager.connect();
+//                        logger.info("Соединение с базой данных.");
+//                        databaseManager.connect();
 
                         logger.info("Выполнение запроса. " + Thread.currentThread().getName());
                         response = runtimeManager.commandProcessing(command, false, null, databaseManager);

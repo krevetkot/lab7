@@ -16,16 +16,17 @@ import static java.sql.Types.INTEGER;
 
 public class DatabaseManager {
 //    private String URL = "jdbc:postgresql://pg:5432/studs";
-    private String URL = "jdbc:postgresql://localhost:9876/studs";
-    private String user;
+    private final String URL;
+    private final String user;
     private final String password;
     private Connection connection;
     private boolean isConnect = false;
     private static final Logger logger = LogManager.getLogger(DatabaseManager.class);
 
-    public DatabaseManager(String user, String password){
+    public DatabaseManager(String user, String password, String URL){
         this.user = user;
         this.password = password;
+        this.URL = URL;
     }
 
     public void connect(){
@@ -171,13 +172,13 @@ public class DatabaseManager {
         return res.getInt("dragon_id");
     }
 
-    public int addUser(ClientIdentification clientID) throws SQLException {
+    public void addUser(ClientIdentification clientID) throws SQLException {
         PreparedStatement addStatement = connection.prepareStatement("insert into users(login, password) values (?, ?) returning user_id;");
         addStatement.setString(1, clientID.getLogin());
         addStatement.setString(2, clientID.getPassword());
         ResultSet res = addStatement.executeQuery();
         res.next();
-        return res.getInt("user_id");
+//        return res.getInt("user_id");
     }
 
     public int findUser(String login){

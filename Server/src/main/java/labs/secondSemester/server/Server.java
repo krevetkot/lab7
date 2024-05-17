@@ -7,9 +7,12 @@ import labs.secondSemester.commons.network.Serializer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.sql.SQLException;
+import java.util.Scanner;
 
 public class Server {
     private final int PORT = 2224;
@@ -18,16 +21,15 @@ public class Server {
     private final RuntimeManager runtimeManager;
     private final int BUFFER_LENGTH = 1000;
     private DatabaseManager databaseManager;
+    private String fileWithCredentials;
 
     private static final Logger logger = LogManager.getLogger(Server.class);
 
-    {
+    public Server(String fileWithCredentials) throws SocketException {
+        this.fileWithCredentials = fileWithCredentials;
+        datagramSocket = new DatagramSocket(PORT);
         serializer = new Serializer();
         runtimeManager = new RuntimeManager();
-    }
-
-    public Server() throws SocketException {
-        datagramSocket = new DatagramSocket(PORT);
     }
 
     public void start() {
@@ -54,26 +56,27 @@ public class Server {
 
         new Thread(new ClientHandler(datagramSocket, databaseManager)).start();
 
-        databaseManager.closeConnection();
+//        databaseManager.closeConnection();
     }
 
     public void connectToBD(){
         logger.info("Получение логина и пароля для входа в БД.");
-        String login = null, password = null;
-        login = "s409577";
-        password = "7Tpx3iO5o2XLp7ja";
-//        try {
-//            Scanner signInScanner = new Scanner(new File("C:\\Users\\User\\java_workspace\\lab777\\Server\\BDCredentials.txt"));
-//            login = signInScanner.nextLine().trim();
-//            password = signInScanner.nextLine().trim();
-//        } catch (FileNotFoundException e) {
-//            logger.error("Проблема с входными данными для подключения к БД. Ошибка: " + e.getMessage());
-//            logger.error("Завершение работы.");
-//            System.exit(-1);
-//        }
+        String login = null, password = null, URL = null;
+//        login = "s409577";
+//        password = "7Tpx3iO5o2XLp7ja";
+        try {
+            Scanner signInScanner = new Scanner(new File(fileWithCredentials));
+            login = signInScanner.nextLine().trim();
+            password = signInScanner.nextLine().trim();
+            URL = signInScanner.nextLine().trim();
+        } catch (FileNotFoundException e) {
+            logger.error("Проблема с входными данными для подключения к БД. Ошибка: " + e.getMessage());
+            logger.error("Завершение работы.");
+            System.exit(-1);
+        }
 
         logger.info("Создание менеджера базы данных.");
-        databaseManager = new DatabaseManager(login, password);
+        databaseManager = new DatabaseManager(login, password, URL);
         databaseManager.connect();
     }
 }

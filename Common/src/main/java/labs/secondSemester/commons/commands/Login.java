@@ -16,7 +16,7 @@ public class Login extends Command{
     public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws IllegalValueException, SQLException {
         Response response = new Response();
         if (dbmanager.checkPassword(getClientID())){
-            response.add("yes");
+//            response.add("yes");
             response.add("Выполнен вход в аккаунт.");
             return response;
         }

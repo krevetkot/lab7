@@ -86,6 +86,8 @@ public class Client {
 
         System.out.println("Приветствуем Вас в приложении по управлению коллекцией! Введите 'help' для вывода доступных команд.");
         System.out.println("Необходимо зарегистрироваться или выполнить вход в аккаунт. Это можно сделать командами sign_up и login.");
+        clientID = new ClientIdentification("Kseniya", encryptStringSHA512("11111"));
+        clientID.setAuthorized(true);
 
         while (true) {
             try {
@@ -102,13 +104,11 @@ public class Client {
                 if (!clientID.isAuthorized()){
                     if (command instanceof SignUp){
                         clientID = askLoginPassword(scanner);
-
+                        command.setClientID(clientID);
                     }
                     else if (command instanceof Login){
-                        askLoginPassword(scanner);
-                        send(command);
-                        receive(buffer);
-
+                        clientID = askLoginPassword(scanner);
+                        command.setClientID(clientID);
                     } else {
                         System.out.println("Необходимо зарегистрироваться или выполнить вход в аккаунт. Это можно сделать командами sign_up и login.");
                         continue;
@@ -144,7 +144,13 @@ public class Client {
             try {
                 Response response = receive(buffer);
                 for (String element : response.getResponse()) {
-                    System.out.println(element);
+                    if (element.equals("Выполнен вход в аккаунт.")){
+                        System.out.println(element);
+                        clientID.setAuthorized(true);
+                    }
+                    else {
+                        System.out.println(element);
+                    }
                 }
             } catch (Exception e){
                 System.out.println("Проблемы с ответом от сервера.");
