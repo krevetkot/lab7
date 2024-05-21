@@ -13,6 +13,8 @@ import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.sql.SQLException;
 import java.util.Scanner;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Server {
     private final int PORT = 2224;
@@ -23,6 +25,8 @@ public class Server {
     private DatabaseManager databaseManager;
     private String fileWithCredentials;
 
+    private final ExecutorService executorService;
+
     private static final Logger logger = LogManager.getLogger(Server.class);
 
     public Server(String fileWithCredentials) throws SocketException {
@@ -30,19 +34,13 @@ public class Server {
         datagramSocket = new DatagramSocket(PORT);
         serializer = new Serializer();
         runtimeManager = new RuntimeManager();
+        executorService = Executors.newFixedThreadPool(4);
     }
 
     public void start() {
         logger.info("Запуск сервера.");
 
         connectToBD();
-
-//        try {
-//            databaseManager.saveCollection();
-//        } catch (SQLException e) {
-//            logger.error(e.getMessage());
-//            System.exit(-1);
-//        }
 
         CollectionManager.getCollection().clear();
 
@@ -55,6 +53,7 @@ public class Server {
         }
 
         new Thread(new ClientHandler(datagramSocket, databaseManager)).start();
+
 
 //        databaseManager.closeConnection();
     }

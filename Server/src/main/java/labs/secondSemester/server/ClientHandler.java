@@ -45,40 +45,57 @@ public class ClientHandler implements Runnable{
 
     @Override
     public void run() {
-        while (true) {
-            try {
-                byte[] buffer = new byte[BUFFER_LENGTH];
-                DatagramPacket datagramPacket = new DatagramPacket(buffer, buffer.length, datagramSocket.getInetAddress(), PORT);
 
-                Command command = readRequest(datagramPacket, buffer);
 
-                fixedPool.execute(() -> {
-                    Response response = new Response();
+//        new Thread(() -> {
+            logger.info(Thread.activeCount());
+            while (true) {
+                try {
+                    byte[] buffer = new byte[BUFFER_LENGTH];
+                    DatagramPacket datagramPacket = new DatagramPacket(buffer, buffer.length, datagramSocket.getInetAddress(), PORT);
+                    Command command;
                     try {
-//                        logger.info("Соединение с базой данных.");
-//                        databaseManager.connect();
-
-                        logger.info("Выполнение запроса. " + Thread.currentThread().getName());
-                        response = runtimeManager.commandProcessing(command, false, null, databaseManager);
-                    } catch (IllegalValueException e) {
-                        response.add(e.getMessage());
+                        command = readRequest(datagramPacket, buffer);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
                     }
 
-                    Response finalResponse = response;
-                    forkJoinPool.execute(() -> {
+                    Command finalCommand = command;
+                    fixedPool.execute(() -> {
+
+                        //ТУТ надо сделать коннект к бд
+                        //все, я делать опд, заебала эта ебатория
+
+                        Response response = new Response();
                         try {
-                            logger.info("Отправка ответа. " + Thread.currentThread().getName());
-                            sendResponse(finalResponse, datagramPacket.getSocketAddress());
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
+                            logger.info("Выполнение запроса. " + Thread.currentThread().getName());
+                            response = runtimeManager.commandProcessing(finalCommand, false, null, databaseManager);
+                        } catch (IllegalValueException e) {
+                            response.add(e.getMessage());
                         }
+
+                        Response finalResponse = response;
+                        forkJoinPool.execute(() -> {
+                            try {
+                                logger.info("Отправка ответа. " + Thread.currentThread().getName());
+                                sendResponse(finalResponse, datagramPacket.getSocketAddress());
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                        });
                     });
-                });
-            } catch (Exception e) {
-                logger.error("thread: " + Thread.currentThread().getName() + ":" + e.getMessage());
-                return;
+
+                } catch (Exception e) {
+                    logger.error("thread: " + Thread.currentThread().getName() + ":" + e.getMessage());
+                    return;
+                }
             }
-        }
+
+//        }).start();
+
+
+
+
     }
 
     public void sendResponse(Response response, SocketAddress address) throws IOException {
@@ -111,6 +128,7 @@ public class ClientHandler implements Runnable{
 
     public <T> T readRequest(DatagramPacket datagramPacket, byte[] buffer) throws IOException {
         logger.info("Получение запроса. " + Thread.currentThread().getName());
+
         datagramSocket.receive(datagramPacket);
         logger.info("Запрос прочитан. "+ Thread.currentThread().getName());
         Packet packet = serializer.deserialize(buffer);
