@@ -15,7 +15,7 @@ create table person(
 	person_name varchar(255) not null,
 	passport_id varchar(255),
 	eye_color varchar(255) not null check (eye_color in ('GREEN', 'YELLOW', 'ORANGE', 'RED', 'BLACK', 'BLUE')),
-	hair_color varchar(255) check (hair_color in ('GREEN', 'YELLOW', 'ORANGE', 'RED', 'BLACK', 'BLUE')),
+	hair_color varchar(255) check (hair_color in ('GREEN', 'YELLOW', 'ORANGE', 'RED', 'BLACK', 'BLUE', null)),
 	nationality varchar(255) not null check (nationality in ('USA', 'VATICAN', 'ITALY', 'THAILAND', 'SOUTH_KOREA')),
 	countKilledDragons bigint check (countKilledDragons > 0)
 );
@@ -34,34 +34,14 @@ create table dragon(
 	age bigint not null check (age > 0),
 	weight bigint not null check (age > 0),
 	speaking boolean,
-	type varchar(255) check (type in ('WATER', 'UNDERGROUND', 'AIR', 'FIRE', null)),
+	type varchar(255) check (type in ('WATER', 'UNDERGROUND', 'AIR', 'FIRE', NULL)),
 	killer integer references person,
 	owner integer references users
 );
 
-
-
-
-
-//на данный момент все созданы
-
-select * from dragon 
-join person on (dragon.killer = person.person_id) 
-join coordinates on (dragon.coordinates = coordinates.coordinates_id);
-
-
-insert into person (person_name, passport_id, eye_color, hair_color, nationality, countKilledDragons) values (?, ?, ?, ?, ?, ?);
-
-insert into dragon (dragon_name, coordinates, creation_date, age, weight, speaking, type, killer);
-
-select * from users where (users.login = "user");
-
-
-create type color as enum('GREEN', 'YELLOW', 'ORANGE', 'RED', 'BLACK', 'BLUE');
-create type country as enum('USA', 'VATICAN', 'ITALY', 'THAILAND', 'SOUTH_KOREA');
-create type dragon_type as enum('WATER', 'UNDERGROUND', 'AIR', 'FIRE');
-
-update dragon set(dragon_name, coordinates, creation_date, age, weight, speaking, type, killer)=(?, ?, ?, ?, ?, ?, ?, ?);
+insert into users(login, password)
+values
+    ('Kseniya123', '22e7e9d85b7fe6004f7b9f3aa592ea9ec9ce098682e8192fa83785f1784c768d1d1ac3b8afcae88666f66aec24739ac133e9d4adc7506f1a5f1f6078cb27c674');
 
 
 insert into coordinates(x, y)
@@ -80,11 +60,11 @@ values
 	
 insert into dragon (dragon_name, coordinates, creation_date, age, weight, speaking, type, killer, owner)
 values
-	('Katya', 1, 2024-03-13, 10, 23, true, 'AIR', 1, 1),
-	('Oleg', 2, 2024-03-13, 10, 23, true, 'FIRE', 2, 1),
-	('Artem', 3, 2024-03-13, 10, 23, true, 'WATER', null, 1),
-	('Zhora', 4, 2024-03-13, 10, 23, true, 'AIR', 3, 1),
-	('Kristina', 5, 2024-03-13, 10, 23, true, 'FIRE', null, 1);
+	('Katya', 1, '2024-03-13', 10, 23, true, 'AIR', 1, 1),
+	('Oleg', 2, '2024-03-13', 10, 23, true, 'FIRE', 2, 1),
+	('Artem', 3, '2024-03-13', 10, 23, true, 'WATER', null, 1),
+	('Zhora', 4, '2024-03-13', 10, 23, true, 'AIR', 3, 1),
+	('Kristina', 5, '2024-03-13', 10, 23, true, 'FIRE', null, 1);
 	
 	
 

@@ -65,8 +65,8 @@ public class Client {
 
         System.out.println("Приветствуем Вас в приложении по управлению коллекцией! Введите 'help' для вывода доступных команд.");
         System.out.println("Необходимо зарегистрироваться или выполнить вход в аккаунт. Это можно сделать командами sign_up и login.");
-        clientID = new ClientIdentification("Kseniya123", encryptStringSHA512("11111"));
-        clientID.setAuthorized(true);
+//        clientID = new ClientIdentification("Kseniya123", encryptStringSHA512("11111"));
+//        clientID.setAuthorized(true);
 
         while (true) {
             try {
