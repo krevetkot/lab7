@@ -1,6 +1,7 @@
 package labs.secondSemester.commons.commands;
 
 import labs.secondSemester.commons.exceptions.AccessDeniedException;
+import labs.secondSemester.commons.exceptions.ConnectionException;
 import labs.secondSemester.commons.exceptions.IllegalValueException;
 import labs.secondSemester.commons.managers.CollectionManager;
 import labs.secondSemester.commons.managers.DatabaseManager;
@@ -28,7 +29,16 @@ public class RemoveFirst extends Command {
             return new Response("Отказано в доступе: Вы не владелец элемента.");
         }
         else {
-            dbmanager.removeByID(CollectionManager.getCollectionForReading().get(0).getId());
+            try {
+                dbmanager.removeByID(CollectionManager.getCollectionForReading().get(0).getId());
+            } catch (ConnectionException e) {
+                Response response1 = dbmanager.reconnect(new Response(), 1);
+                if (response1==null){
+                    return execute(argument, fileMode, scanner, dbmanager);
+                } else {
+                    return response1;
+                }
+            }
             CollectionManager.getCollectionForWriting().remove(0);
             return new Response("Первый элемент в коллекции удален.");
         }

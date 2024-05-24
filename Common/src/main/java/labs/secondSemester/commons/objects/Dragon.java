@@ -132,7 +132,7 @@ public class Dragon implements Comparable<Dragon>, Serializable {
     @Override
     public String toString() {
         if (killer == null) {
-            return "Дракон: "
+            return "Дракон (" + this.owner + "): "
                     + "id = " + this.id
                     + ", имя = " + this.name
                     + ", координаты = " + this.coordinates
@@ -143,7 +143,7 @@ public class Dragon implements Comparable<Dragon>, Serializable {
                     + ", тип = " + this.type
                     + ", убийца = нет";
         }
-        return "Дракон: "
+        return "Дракон (" + this.owner + "): "
                 + "id = " + this.id
                 + ", имя = " + this.name
                 + ", координаты = " + this.coordinates

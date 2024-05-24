@@ -1,8 +1,11 @@
 package labs.secondSemester.commons.managers;
 
+import labs.secondSemester.commons.exceptions.ConnectionException;
 import labs.secondSemester.commons.exceptions.FailedBuildingException;
 import labs.secondSemester.commons.network.ClientIdentification;
+import labs.secondSemester.commons.network.Response;
 import labs.secondSemester.commons.objects.*;
+import lombok.Getter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -19,8 +22,8 @@ public class DatabaseManager {
     private final String URL;
     private final String user;
     private final String password;
+    @Getter
     private Connection connection;
-    private boolean isConnect = false;
     private static final Logger logger = LogManager.getLogger(DatabaseManager.class);
 
     public DatabaseManager(String user, String password, String URL){
@@ -32,20 +35,40 @@ public class DatabaseManager {
     public void connect(){
         try {
             connection = DriverManager.getConnection(URL, user, password);
-            isConnect = true;
             logger.info("Соединение с базой данных установлено.");
 
         } catch (SQLException e) {
-            isConnect = false;
             logger.error("Соединение с базой данных не установлено. Ошибка: " + e.getMessage());
-            System.exit(-1);
+        }
+    }
+
+    public Response reconnect(Response response, int countOfTries){
+        response.add("Попытка переподключения к БД " + countOfTries);
+        connect();
+        if (countOfTries==3){
+            response.add("База данных умерла (прямо как я). Попробуйте позже.");
+            return response;
+        }
+        if (!isNotConnected()){
+            return null;
+        }
+        else {
+            return reconnect(response, countOfTries + 1);
+        }
+    }
+
+    public boolean isNotConnected(){
+        try {
+            return connection.isClosed();
+        } catch (SQLException e) {
+            logger.error(e.getMessage());
+            return false;
         }
     }
 
     public void closeConnection(){
         try {
             connection.close();
-            isConnect = false;
         } catch (SQLException e) {
             logger.error(e.getMessage());
         }
@@ -67,7 +90,7 @@ public class DatabaseManager {
         Collections.sort(collection);
     }
 
-    public void saveCollection() throws SQLException, AccessDeniedException {
+    public void saveCollection() throws SQLException, AccessDeniedException, ConnectionException {
         for (Dragon dragon: CollectionManager.getCollection()){
             updateOrAddDragon(dragon, new ClientIdentification("Kseniya", "12345"), false, -1);
         }
@@ -110,13 +133,17 @@ public class DatabaseManager {
         return res.getInt("person_id");
     }
 
-    public int updateOrAddDragon(Dragon dragon, ClientIdentification clientID, boolean existence, int id) throws SQLException, AccessDeniedException {
+    public int updateOrAddDragon(Dragon dragon, ClientIdentification clientID, boolean existence, int id) throws SQLException, AccessDeniedException, ConnectionException {
         //если existence == true -> update; false -> add
         //реальное id указывается только если existence=true; иначе -1
 
         int userID = findUser(clientID.getLogin());
         if (userID==-1){
-            throw new AccessDeniedException("Отказано в доступе.");
+            if (isNotConnected()){
+                throw new ConnectionException("Проблемы с подключением к БД.");
+            } else {
+                throw new AccessDeniedException("Отказано в доступе.");
+            }
         }
 
         PreparedStatement statement;
@@ -172,7 +199,10 @@ public class DatabaseManager {
         return res.getInt("dragon_id");
     }
 
-    public void addUser(ClientIdentification clientID) throws SQLException {
+    public void addUser(ClientIdentification clientID) throws SQLException, ConnectionException {
+        if (isNotConnected()){
+            throw new ConnectionException("Проблемы с подключением к БД.");
+        }
         PreparedStatement addStatement = connection.prepareStatement("insert into users(login, password) values (?, ?) returning user_id;");
         addStatement.setString(1, clientID.getLogin());
         addStatement.setString(2, clientID.getPassword());
@@ -195,7 +225,10 @@ public class DatabaseManager {
         return -1;
     }
 
-    public boolean checkPassword(ClientIdentification clientID){
+    public boolean checkPassword(ClientIdentification clientID) throws ConnectionException {
+        if (isNotConnected()){
+            throw new ConnectionException("Проблемы с подключением к БД.");
+        }
         try {
         PreparedStatement ps = connection.prepareStatement("select password from users where (users.login =?);");
         ps.setString(1, clientID.getLogin());
@@ -244,10 +277,13 @@ public class DatabaseManager {
         return dragon;
     }
 
-    public void removeByID(int id) throws SQLException {
-            PreparedStatement deleteStatement = connection.prepareStatement("delete from dragon where (dragon_id=?);");
-            deleteStatement.setInt(1, id);
-            deleteStatement.executeUpdate();
-            logger.info("Объект с id = " + id + " успешно удален.");
+    public void removeByID(int id) throws SQLException, ConnectionException {
+        if (isNotConnected()){
+            throw new ConnectionException("Проблемы с подключением к БД.");
+        }
+        PreparedStatement deleteStatement = connection.prepareStatement("delete from dragon where (dragon_id=?);");
+        deleteStatement.setInt(1, id);
+        deleteStatement.executeUpdate();
+        logger.info("Объект с id = " + id + " успешно удален.");
     }
 }

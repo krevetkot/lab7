@@ -1,5 +1,6 @@
 package labs.secondSemester.commons.commands;
 
+import labs.secondSemester.commons.exceptions.ConnectionException;
 import labs.secondSemester.commons.exceptions.IllegalValueException;
 import labs.secondSemester.commons.managers.CollectionManager;
 import labs.secondSemester.commons.managers.DatabaseManager;
@@ -26,12 +27,19 @@ public class Add extends Command {
         Response response = new Response();
         Dragon buildedDragon = getObjectArgument();
         if (!CollectionManager.contains(buildedDragon)) {
-            int dragonID;
+            int dragonID = 0;
             try {
                 dragonID = dbmanager.updateOrAddDragon(buildedDragon, getClientID(), false, -1);
             } catch (AccessDeniedException e) {
                 response.add(e.getMessage());
                 return response;
+            } catch (ConnectionException e) {
+                Response response1 = dbmanager.reconnect(new Response(), 1);
+                if (response1==null){
+                    return execute(argument, fileMode, scanner, dbmanager);
+                } else {
+                    return response1;
+                }
             }
             buildedDragon.setId(dragonID);
             CollectionManager.getCollectionForWriting().add(buildedDragon);

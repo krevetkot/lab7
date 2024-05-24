@@ -1,11 +1,13 @@
 package labs.secondSemester.commons.commands;
 
 import labs.secondSemester.commons.exceptions.AccessDeniedException;
+import labs.secondSemester.commons.exceptions.ConnectionException;
 import labs.secondSemester.commons.exceptions.IllegalValueException;
 import labs.secondSemester.commons.managers.CollectionManager;
 import labs.secondSemester.commons.managers.DatabaseManager;
 import labs.secondSemester.commons.network.Response;
 
+import java.sql.SQLException;
 import java.util.Scanner;
 
 /**
@@ -25,6 +27,13 @@ public class Clear extends Command {
         } else {
             for (int i=0; i<CollectionManager.getCollectionForReading().size(); i++){
                 if (getClientID().getLogin().equals(CollectionManager.getCollectionForReading().get(i).getOwner())){
+//                    try {
+//                        dbmanager.removeByID(i);
+//                    } catch (SQLException e) {
+//                        throw new RuntimeException(e);
+//                    } catch (ConnectionException e) {
+//                        return dbmanager.reconnect();
+//                    }
                     CollectionManager.getCollectionForWriting().remove(i);
                 }
             }

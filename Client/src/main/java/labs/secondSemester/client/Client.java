@@ -65,8 +65,8 @@ public class Client {
 
         System.out.println("Приветствуем Вас в приложении по управлению коллекцией! Введите 'help' для вывода доступных команд.");
         System.out.println("Необходимо зарегистрироваться или выполнить вход в аккаунт. Это можно сделать командами sign_up и login.");
-//        clientID = new ClientIdentification("Kseniya", encryptStringSHA512("11111"));
-//        clientID.setAuthorized(true);
+        clientID = new ClientIdentification("Kseniya123", encryptStringSHA512("11111"));
+        clientID.setAuthorized(true);
 
         while (true) {
             try {
@@ -103,6 +103,7 @@ public class Client {
                         Dragon buildedDragon = newDragon.build(scanner, false);
                         buildedDragon.setOwner(clientID.getLogin());
                         command.setObjectArgument(buildedDragon);
+                        command.setClientID(clientID);
                     } catch (FailedBuildingException | IllegalValueException e) {
                         Console.print(e.getMessage(), false);
                     }
@@ -115,6 +116,7 @@ public class Client {
                     fileManager.executeFile(request.trim().split(" ")[1], clientID);
                     continue;
                 } else {
+                    command.setClientID(clientID);
                     send(command);
                 }
 
@@ -217,8 +219,9 @@ public class Client {
             SocketAddress address = null;
             int time = 1;
             int tries = 1;
+            int period = 500000;
             while (!serverAddress.equals(address)) {
-                if (time % 500000 == 0) {
+                if (time % period == 0) {
                     connectServer(tries);
                     tries += 1;
                 }

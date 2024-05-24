@@ -1,13 +1,11 @@
 package labs.secondSemester.commons.commands;
 
-import labs.secondSemester.commons.exceptions.FailedBuildingException;
+import labs.secondSemester.commons.exceptions.ConnectionException;
 import labs.secondSemester.commons.exceptions.IllegalValueException;
 import labs.secondSemester.commons.managers.CollectionManager;
-import labs.secondSemester.commons.managers.Console;
 import labs.secondSemester.commons.managers.DatabaseManager;
 import labs.secondSemester.commons.network.Response;
 import labs.secondSemester.commons.objects.Dragon;
-import labs.secondSemester.commons.objects.forms.DragonForm;
 
 import java.nio.file.AccessDeniedException;
 import java.sql.SQLException;
@@ -55,6 +53,13 @@ public class InsertAt extends Command {
             }
         } catch (SQLException | AccessDeniedException e) {
             return new Response(e.getMessage());
+        } catch (ConnectionException e) {
+            Response response1 = dbmanager.reconnect(new Response(), 1);
+            if (response1 == null) {
+                return execute(argument, fileMode, scanner, dbmanager);
+            } else {
+                return response1;
+            }
         }
     }
 

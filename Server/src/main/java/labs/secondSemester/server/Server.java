@@ -79,5 +79,9 @@ public class Server {
         logger.info("Создание менеджера базы данных.");
         databaseManager = new DatabaseManager(login, password, URL);
         databaseManager.connect();
+        if (databaseManager.getConnection()==null){
+            logger.info("Без базы данных мы работать не будем. Приходите позже.");
+            System.exit(-1);
+        }
     }
 }
