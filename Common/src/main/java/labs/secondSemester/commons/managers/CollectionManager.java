@@ -39,7 +39,7 @@ public class CollectionManager {
      * @throws JAXBException           - ошибка парсинга
      * @throws FailedBuildingException - ошибка сборки объектов
      */
-    public static void loadCollection(String filename) throws IOException, JAXBException, FailedBuildingException {
+    /*public static void loadCollection(String filename) throws IOException, JAXBException, FailedBuildingException {
         if (!(new File(filename).isFile())){
             throw new IOException("Невозможно прочесть файл.");
         }
@@ -69,7 +69,7 @@ public class CollectionManager {
         }
 
         br.close();
-    }
+    }*/
 
     /**
      * Возвращает экземпляр коллекции. Если коллекция еще не инициализирована - инициализирует.

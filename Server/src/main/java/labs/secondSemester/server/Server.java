@@ -23,8 +23,7 @@ public class Server {
     private final RuntimeManager runtimeManager;
     private final int BUFFER_LENGTH = 1000;
     private DatabaseManager databaseManager;
-    private String fileWithCredentials;
-
+    private final String fileWithCredentials;
     private final ExecutorService executorService;
 
     private static final Logger logger = LogManager.getLogger(Server.class);
@@ -52,7 +51,12 @@ public class Server {
             System.exit(-1);
         }
 
-        new Thread(new ClientHandler(datagramSocket, databaseManager)).start();
+
+        final int COUNT_OF_CLIENTS = 5;
+        for (int i = 0; i < COUNT_OF_CLIENTS; i++) {
+            executorService.submit(new ClientHandler(datagramSocket, databaseManager, fileWithCredentials));
+            logger.info(Thread.activeCount());
+        }
 
 
 //        databaseManager.closeConnection();
@@ -61,8 +65,6 @@ public class Server {
     public void connectToBD(){
         logger.info("Получение логина и пароля для входа в БД.");
         String login = null, password = null, URL = null;
-//        login = "s409577";
-//        password = "7Tpx3iO5o2XLp7ja";
         try {
             Scanner signInScanner = new Scanner(new File(fileWithCredentials));
             login = signInScanner.nextLine().trim();

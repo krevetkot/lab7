@@ -26,7 +26,7 @@ public class Add extends Command {
         Response response = new Response();
         Dragon buildedDragon = getObjectArgument();
         if (!CollectionManager.contains(buildedDragon)) {
-            int dragonID = 0;
+            int dragonID;
             try {
                 dragonID = dbmanager.updateOrAddDragon(buildedDragon, getClientID(), false, -1);
             } catch (AccessDeniedException e) {

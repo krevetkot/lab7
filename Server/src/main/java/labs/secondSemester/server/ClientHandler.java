@@ -11,12 +11,15 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
@@ -29,8 +32,9 @@ public class ClientHandler implements Runnable{
     private final RuntimeManager runtimeManager;
     private final int BUFFER_LENGTH = 10240;
     private final ExecutorService fixedPool = Executors.newFixedThreadPool(10);
-    private final DatabaseManager databaseManager;
+    private DatabaseManager databaseManager;
     private static final Logger logger = LogManager.getLogger(ClientHandler.class);
+    private final String fileWithCredentials;
 
 
     {
@@ -38,64 +42,76 @@ public class ClientHandler implements Runnable{
         runtimeManager = new RuntimeManager();
     }
 
-    public ClientHandler(DatagramSocket socket, DatabaseManager dbmanager){
+    public ClientHandler(DatagramSocket socket, DatabaseManager dbmanager, String fileWithCredentials){
         datagramSocket = socket;
         databaseManager = dbmanager;
+        this.fileWithCredentials = fileWithCredentials;
     }
 
     @Override
     public void run() {
 
 
-//        new Thread(() -> {
-            logger.info(Thread.activeCount());
-            while (true) {
+        connectToBD();
+
+        logger.info(Thread.activeCount());
+        while (true) {
+            try {
+                byte[] buffer = new byte[BUFFER_LENGTH];
+                DatagramPacket datagramPacket = new DatagramPacket(buffer, buffer.length, datagramSocket.getInetAddress(), PORT);
+                Command command;
                 try {
-                    byte[] buffer = new byte[BUFFER_LENGTH];
-                    DatagramPacket datagramPacket = new DatagramPacket(buffer, buffer.length, datagramSocket.getInetAddress(), PORT);
-                    Command command;
+                    command = readRequest(datagramPacket, buffer);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
+                Command finalCommand = command;
+                fixedPool.execute(() -> {
+
+                    Response response = new Response();
                     try {
-                        command = readRequest(datagramPacket, buffer);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
+                        logger.info("Выполнение запроса. " + Thread.currentThread().getName());
+                        response = runtimeManager.commandProcessing(finalCommand, false, null, databaseManager);
+                    } catch (IllegalValueException e) {
+                        response.add(e.getMessage());
                     }
 
-                    Command finalCommand = command;
-                    fixedPool.execute(() -> {
-
-                        //ТУТ надо сделать коннект к бд
-                        //все, я делать опд, заебала эта ебатория
-
-                        Response response = new Response();
+                    Response finalResponse = response;
+                    forkJoinPool.execute(() -> {
                         try {
-                            logger.info("Выполнение запроса. " + Thread.currentThread().getName());
-                            response = runtimeManager.commandProcessing(finalCommand, false, null, databaseManager);
-                        } catch (IllegalValueException e) {
-                            response.add(e.getMessage());
+                            logger.info("Отправка ответа. " + Thread.currentThread().getName());
+                            sendResponse(finalResponse, datagramPacket.getSocketAddress());
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
                         }
-
-                        Response finalResponse = response;
-                        forkJoinPool.execute(() -> {
-                            try {
-                                logger.info("Отправка ответа. " + Thread.currentThread().getName());
-                                sendResponse(finalResponse, datagramPacket.getSocketAddress());
-                            } catch (IOException e) {
-                                throw new RuntimeException(e);
-                            }
-                        });
                     });
+                });
 
-                } catch (Exception e) {
-                    logger.error("thread: " + Thread.currentThread().getName() + ":" + e.getMessage());
-                    return;
-                }
+            } catch (Exception e) {
+                logger.error("thread: " + Thread.currentThread().getName() + ":" + e.getMessage());
+                return;
             }
+        }
+    }
 
-//        }).start();
+    public void connectToBD(){
+        logger.info("Получение логина и пароля для входа в БД.");
+        String login = null, password = null, URL = null;
+        try {
+            Scanner signInScanner = new Scanner(new File(fileWithCredentials));
+            login = signInScanner.nextLine().trim();
+            password = signInScanner.nextLine().trim();
+            URL = signInScanner.nextLine().trim();
+        } catch (FileNotFoundException e) {
+            logger.error("Проблема с входными данными для подключения к БД. Ошибка: " + e.getMessage());
+            logger.error("Завершение работы.");
+            System.exit(-1);
+        }
 
-
-
-
+        logger.info("Создание менеджера базы данных.");
+        databaseManager = new DatabaseManager(login, password, URL);
+        databaseManager.connect();
     }
 
     public void sendResponse(Response response, SocketAddress address) throws IOException {
@@ -127,7 +143,7 @@ public class ClientHandler implements Runnable{
     }
 
     public <T> T readRequest(DatagramPacket datagramPacket, byte[] buffer) throws IOException {
-        logger.info("Получение запроса. " + Thread.currentThread().getName());
+        logger.info("Ожидание запроса. " + Thread.currentThread().getName());
 
         datagramSocket.receive(datagramPacket);
         logger.info("Запрос прочитан. "+ Thread.currentThread().getName());
