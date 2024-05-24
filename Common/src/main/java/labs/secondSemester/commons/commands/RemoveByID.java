@@ -1,5 +1,6 @@
 package labs.secondSemester.commons.commands;
 
+import labs.secondSemester.commons.exceptions.AccessDeniedException;
 import labs.secondSemester.commons.exceptions.IllegalValueException;
 import labs.secondSemester.commons.managers.CollectionManager;
 import labs.secondSemester.commons.managers.DatabaseManager;
@@ -21,8 +22,8 @@ public class RemoveByID extends Command {
     }
 
     @Override
-    public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws IllegalValueException, NoSuchElementException, NumberFormatException, SQLException {
-        if (CollectionManager.getCollection().isEmpty()) {
+    public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws IllegalValueException, NoSuchElementException, NumberFormatException, SQLException, AccessDeniedException {
+        if (CollectionManager.getCollectionForReading().isEmpty()) {
             throw new NoSuchElementException("Коллекция пока что пуста");
         }
 
@@ -37,7 +38,7 @@ public class RemoveByID extends Command {
         }
         else {
             dbmanager.removeByID((int) id);
-            CollectionManager.getCollection().remove(oldDragon);
+            CollectionManager.getCollectionForWriting().remove(oldDragon);
             return new Response("Элемент с ID " + id + " удален");
         }
     }

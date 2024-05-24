@@ -1,5 +1,6 @@
 package labs.secondSemester.commons.commands;
 
+import labs.secondSemester.commons.exceptions.AccessDeniedException;
 import labs.secondSemester.commons.exceptions.IllegalValueException;
 import labs.secondSemester.commons.managers.CollectionManager;
 import labs.secondSemester.commons.managers.DatabaseManager;
@@ -18,16 +19,15 @@ public class Clear extends Command {
     }
 
     @Override
-    public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws IllegalValueException {
-        if (CollectionManager.getCollection().isEmpty()) {
+    public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws IllegalValueException, AccessDeniedException {
+        if (CollectionManager.getCollectionForReading().isEmpty()) {
             return new Response("Коллекция и так пуста.");
         } else {
-            for (int i=0; i<CollectionManager.getCollection().size(); i++){
-                if (getClientID().getLogin().equals(CollectionManager.getCollection().get(i).getOwner())){
-                    CollectionManager.getCollection().remove(i);
+            for (int i=0; i<CollectionManager.getCollectionForReading().size(); i++){
+                if (getClientID().getLogin().equals(CollectionManager.getCollectionForReading().get(i).getOwner())){
+                    CollectionManager.getCollectionForWriting().remove(i);
                 }
             }
-//            CollectionManager.getCollection().clear();
             return new Response("Коллекция очищена. Удалены только элементы, принадлежащие Вам.");
         }
     }

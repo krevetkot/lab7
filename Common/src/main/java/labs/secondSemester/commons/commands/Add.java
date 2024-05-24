@@ -22,7 +22,7 @@ public class Add extends Command {
     }
 
     @Override
-    public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws IllegalValueException, SQLException {
+    public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws IllegalValueException, SQLException, labs.secondSemester.commons.exceptions.AccessDeniedException {
         Response response = new Response();
         Dragon buildedDragon = getObjectArgument();
         if (!CollectionManager.contains(buildedDragon)) {
@@ -34,8 +34,8 @@ public class Add extends Command {
                 return response;
             }
             buildedDragon.setId(dragonID);
-            CollectionManager.getCollection().add(buildedDragon);
-            Collections.sort(CollectionManager.getCollection());
+            CollectionManager.getCollectionForWriting().add(buildedDragon);
+            Collections.sort(CollectionManager.getCollectionForWriting());
             response.add("Спасибо, ваши данные приняты!");
         } else {
             response.add("Такой дракон уже есть в коллекции.");

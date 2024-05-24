@@ -1,5 +1,6 @@
 package labs.secondSemester.commons.commands;
 
+import labs.secondSemester.commons.exceptions.AccessDeniedException;
 import labs.secondSemester.commons.exceptions.IllegalValueException;
 import labs.secondSemester.commons.managers.CollectionManager;
 import labs.secondSemester.commons.managers.DatabaseManager;
@@ -21,12 +22,12 @@ public class PrintFieldDescendingAge extends Command {
     }
 
     @Override
-    public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws IllegalValueException {
-        if (CollectionManager.getCollection().isEmpty()) {
+    public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws IllegalValueException, AccessDeniedException {
+        if (CollectionManager.getCollectionForReading().isEmpty()) {
             return new Response("Коллекция пуста.");
         } else {
             ArrayList<Long> ages = new ArrayList<>();
-            for (Dragon element : CollectionManager.getCollection()) {
+            for (Dragon element : CollectionManager.getCollectionForReading()) {
                 ages.add(element.getAge());
             }
             ages.sort(Collections.reverseOrder());

@@ -4,6 +4,7 @@ import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Marshaller;
 import jakarta.xml.bind.Unmarshaller;
+import labs.secondSemester.commons.exceptions.AccessDeniedException;
 import labs.secondSemester.commons.exceptions.FailedBuildingException;
 import labs.secondSemester.commons.objects.Dragon;
 import labs.secondSemester.commons.objects.forms.DragonsForParsing;
@@ -13,6 +14,8 @@ import java.io.*;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 
 /**
@@ -30,6 +33,9 @@ public class CollectionManager {
      */
     @Setter
     private static String fileName;
+    private static final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+    private static final ReentrantReadWriteLock.ReadLock readLock = lock.readLock();
+    private static final ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock();
 
     /**
      * Загружает коллекцию из файла. Вызывается при открытии приложения.
@@ -82,6 +88,42 @@ public class CollectionManager {
         }
         return collectionOfDragons;
     }
+
+    public static ArrayList<Dragon> getCollectionForReading() throws AccessDeniedException {
+        try {
+            if (writeLock.tryLock(1L, TimeUnit.MINUTES)) {
+                if (collectionOfDragons == null) {
+                    collectionOfDragons = new ArrayList<>();
+                }
+                return collectionOfDragons;
+            } else {
+                throw new AccessDeniedException("Невозможно обратиться к коллекции для чтения.");
+            }
+        } catch (Exception e) {
+            throw new AccessDeniedException("Невозможно обратиться к коллекции для чтения.");
+        } finally {
+            writeLock.unlock();
+        }
+    }
+
+    public static ArrayList<Dragon> getCollectionForWriting() throws AccessDeniedException {
+        try {
+            if (readLock.tryLock(1L, TimeUnit.MINUTES)) {
+                if (collectionOfDragons == null) {
+                    collectionOfDragons = new ArrayList<>();
+                }
+                return collectionOfDragons;
+            } else {
+                throw new AccessDeniedException("Невозможно обратиться к коллекции для записи.");
+            }
+        } catch (Exception e) {
+            throw new AccessDeniedException("Невозможно обратиться к коллекции для записи.");
+        } finally {
+            readLock.unlock();
+        }
+    }
+
+
 
     /**
      * Возвращает элемент коллекции по его идентификатору.

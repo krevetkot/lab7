@@ -1,5 +1,6 @@
 package labs.secondSemester.commons.commands;
 
+import labs.secondSemester.commons.exceptions.AccessDeniedException;
 import labs.secondSemester.commons.exceptions.IllegalValueException;
 import labs.secondSemester.commons.managers.CollectionManager;
 import labs.secondSemester.commons.managers.DatabaseManager;
@@ -19,14 +20,14 @@ public class Info extends Command {
     }
 
     @Override
-    public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws IllegalValueException {
-        if (CollectionManager.getCollection().isEmpty()) {
-            return new Response("Коллекция пока что пуста. Тип коллекции: " + CollectionManager.getCollection().getClass());
+    public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws IllegalValueException, AccessDeniedException {
+        if (CollectionManager.getCollectionForReading().isEmpty()) {
+            return new Response("Коллекция пока что пуста. Тип коллекции: " + CollectionManager.getCollectionForReading().getClass());
         } else {
             Response response = new Response();
-            response.add("Тип коллекции: " + CollectionManager.getCollection().getClass());
-            response.add("Количество элементов: " + CollectionManager.getCollection().size());
-            response.add("Дата инициализации: " + CollectionManager.getCollection().get(0).getCreationDate());
+            response.add("Тип коллекции: " + CollectionManager.getCollectionForReading().getClass());
+            response.add("Количество элементов: " + CollectionManager.getCollectionForReading().size());
+            response.add("Дата инициализации: " + CollectionManager.getCollectionForReading().get(0).getCreationDate());
             return response;
         }
     }

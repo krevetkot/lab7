@@ -1,6 +1,7 @@
 package labs.secondSemester.client;
 
 import labs.secondSemester.commons.commands.*;
+import labs.secondSemester.commons.exceptions.AccessDeniedException;
 import labs.secondSemester.commons.exceptions.FailedBuildingException;
 import labs.secondSemester.commons.exceptions.IllegalValueException;
 import labs.secondSemester.commons.managers.Console;
@@ -62,32 +63,10 @@ public class Client {
         String request = null;
         CommandFactory commandFactory = new CommandFactory(clientID);
 
-//        System.out.println("Необходимо выполнить вход в аккаунт.");
-//        System.out.println("Если аккаунта нет, он будет автоматически создан.");
-
-//        while (true){
-//            singIn(scanner);
-//            try {
-//                Command command = commandFactory.buildCommand("login_or_sign_up");
-//                commandFactory.setClientID(clientID);
-//                send(command);
-//                Response response = receive(buffer);
-//                if (response.getResponse().size()==2){
-//                    System.out.println(response.getResponse().get(1));
-//                    if (response.getResponse().get(0).equals("yes")){
-//                        break;
-//                    }
-//                }
-//                System.out.println("Повторная попытка входа.");
-//            } catch (IllegalValueException e) {
-//                System.out.println("Повторная попытка входа.");
-//            }
-//        }
-
         System.out.println("Приветствуем Вас в приложении по управлению коллекцией! Введите 'help' для вывода доступных команд.");
         System.out.println("Необходимо зарегистрироваться или выполнить вход в аккаунт. Это можно сделать командами sign_up и login.");
-        clientID = new ClientIdentification("Kseniya", encryptStringSHA512("11111"));
-        clientID.setAuthorized(true);
+//        clientID = new ClientIdentification("Kseniya", encryptStringSHA512("11111"));
+//        clientID.setAuthorized(true);
 
         while (true) {
             try {
@@ -110,8 +89,12 @@ public class Client {
                         clientID = askLoginPassword(scanner);
                         command.setClientID(clientID);
                     } else {
-                        System.out.println("Необходимо зарегистрироваться или выполнить вход в аккаунт. Это можно сделать командами sign_up и login.");
-                        continue;
+                        if (command instanceof Exit){
+                            command.execute(null, false, null, null);
+                        } else {
+                            System.out.println("Необходимо зарегистрироваться или выполнить вход в аккаунт. Это можно сделать командами sign_up и login.");
+                            continue;
+                        }
                     }
                 }
                 if (command instanceof Add || command instanceof InsertAt || command instanceof Update) {
@@ -126,7 +109,6 @@ public class Client {
                 }
                 if (command instanceof Exit) {
                     command.execute(null, false, null, null);
-
                 }
                 if (command instanceof ExecuteFile) {
                     assert request != null;
@@ -136,7 +118,7 @@ public class Client {
                     send(command);
                 }
 
-            } catch (IllegalValueException | ArrayIndexOutOfBoundsException | NumberFormatException | SQLException e) {
+            } catch (IllegalValueException | ArrayIndexOutOfBoundsException | NumberFormatException | SQLException | AccessDeniedException e) {
                 System.out.println(e.getMessage());
                 continue;
             }

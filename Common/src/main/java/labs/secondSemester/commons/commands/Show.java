@@ -1,5 +1,6 @@
 package labs.secondSemester.commons.commands;
 
+import labs.secondSemester.commons.exceptions.AccessDeniedException;
 import labs.secondSemester.commons.exceptions.IllegalValueException;
 import labs.secondSemester.commons.managers.CollectionManager;
 import labs.secondSemester.commons.managers.DatabaseManager;
@@ -20,13 +21,12 @@ public class Show extends Command {
     }
 
     @Override
-    public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws IllegalValueException {
-        ArrayList<Dragon> collection = CollectionManager.getCollection();
-        if (collection.isEmpty()) {
+    public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws IllegalValueException, AccessDeniedException {
+        if (CollectionManager.getCollectionForReading().isEmpty()) {
             return new Response("Коллекция пуста.");
         }
         Response response = new Response();
-        for (Dragon element : collection) {
+        for (Dragon element : CollectionManager.getCollectionForReading()) {
             try {
                 response.add(element.toString());
             } catch (Exception e) {

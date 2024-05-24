@@ -25,9 +25,9 @@ public class Update extends Command {
     }
 
     @Override
-    public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws IllegalValueException, NumberFormatException, NoSuchElementException, SQLException {
+    public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws IllegalValueException, NumberFormatException, NoSuchElementException, SQLException, labs.secondSemester.commons.exceptions.AccessDeniedException {
         Response response = new Response();
-        if (CollectionManager.getCollection().isEmpty()) {
+        if (CollectionManager.getCollectionForReading().isEmpty()) {
             throw new NoSuchElementException("Коллекция пока что пуста");
         }
 
@@ -41,7 +41,7 @@ public class Update extends Command {
             return new Response("Отказано в доступе: Вы не владелец элемента.");
         }
 
-        int index = CollectionManager.getCollection().indexOf(oldDragon);
+        int index = CollectionManager.getCollectionForReading().indexOf(oldDragon);
         int oldID = oldDragon.getId();
 
         Dragon changedDragon = getObjectArgument();
@@ -52,7 +52,7 @@ public class Update extends Command {
             return new Response(e.getMessage());
         }
         changedDragon.setId(oldID);
-        CollectionManager.getCollection().set(index, changedDragon);
+        CollectionManager.getCollectionForWriting().set(index, changedDragon);
         response.add("Элемент с ID " + id + " обновлен");
 
         return response;

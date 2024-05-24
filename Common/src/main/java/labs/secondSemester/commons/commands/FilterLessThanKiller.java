@@ -1,5 +1,6 @@
 package labs.secondSemester.commons.commands;
 
+import labs.secondSemester.commons.exceptions.AccessDeniedException;
 import labs.secondSemester.commons.exceptions.IllegalValueException;
 import labs.secondSemester.commons.managers.CollectionManager;
 import labs.secondSemester.commons.managers.DatabaseManager;
@@ -20,8 +21,8 @@ public class FilterLessThanKiller extends Command {
     }
 
     @Override
-    public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws IllegalValueException, NumberFormatException, NoSuchElementException {
-        if (CollectionManager.getCollection().isEmpty()) {
+    public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws IllegalValueException, NumberFormatException, NoSuchElementException, AccessDeniedException {
+        if (CollectionManager.getCollectionForReading().isEmpty()) {
             return new Response("Коллекция пуста.");
         } else {
             Long killer = Long.parseLong(argument);
@@ -31,7 +32,7 @@ public class FilterLessThanKiller extends Command {
             }
             boolean flag = true;
             Response response = new Response();
-            for (Dragon element : CollectionManager.getCollection()) {
+            for (Dragon element : CollectionManager.getCollectionForReading()) {
                 if (element.getKiller() != null) {
                     if (element.getKiller().getCountKilledDragons() < killer) {
                         response.add(element.toString());

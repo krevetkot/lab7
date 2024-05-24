@@ -26,17 +26,17 @@ public class InsertAt extends Command {
 
     @Override
     public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager)
-            throws NoSuchElementException, NumberFormatException, IllegalValueException {
+            throws NoSuchElementException, NumberFormatException, IllegalValueException, labs.secondSemester.commons.exceptions.AccessDeniedException {
 
-        if (CollectionManager.getCollection().isEmpty()) {
+        if (CollectionManager.getCollectionForReading().isEmpty()) {
             throw new NoSuchElementException("Коллекция пока что пуста");
         }
 
         int index = Integer.parseInt(argument);
 
-        if (index > CollectionManager.getCollection().size()) {
+        if (index > CollectionManager.getCollectionForReading().size()) {
             throw new NoSuchElementException("Индекс должен быть меньше или равен размеру коллекции. Размер = "
-                    + CollectionManager.getCollection().size());
+                    + CollectionManager.getCollectionForReading().size());
         }
 
         if (index < 0) {
@@ -45,10 +45,10 @@ public class InsertAt extends Command {
 
         try {
             Dragon buildedDragon = getObjectArgument();
-            if (!CollectionManager.getCollection().contains(buildedDragon)) {
+            if (!CollectionManager.getCollectionForReading().contains(buildedDragon)) {
                 int dragonID = dbmanager.updateOrAddDragon(buildedDragon, getClientID(), false, -1);
                 buildedDragon.setId(dragonID);
-                CollectionManager.getCollection().add(index, buildedDragon);
+                CollectionManager.getCollectionForWriting().add(index, buildedDragon);
                 return new Response("Спасибо, ваши данные приняты!");
             } else {
                 return new Response("Такой дракон уже есть в коллекции.");

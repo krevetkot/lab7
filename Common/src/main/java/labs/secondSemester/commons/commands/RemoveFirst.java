@@ -1,5 +1,6 @@
 package labs.secondSemester.commons.commands;
 
+import labs.secondSemester.commons.exceptions.AccessDeniedException;
 import labs.secondSemester.commons.exceptions.IllegalValueException;
 import labs.secondSemester.commons.managers.CollectionManager;
 import labs.secondSemester.commons.managers.DatabaseManager;
@@ -19,16 +20,16 @@ public class RemoveFirst extends Command {
     }
 
     @Override
-    public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws IllegalValueException, SQLException {
-        if (CollectionManager.getCollection().isEmpty()) {
+    public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws IllegalValueException, SQLException, AccessDeniedException {
+        if (CollectionManager.getCollectionForReading().isEmpty()) {
             return new Response("Коллекция пуста.");
         }
-        if (!getClientID().getLogin().equals(CollectionManager.getCollection().get(0).getOwner())){
+        if (!getClientID().getLogin().equals(CollectionManager.getCollectionForReading().get(0).getOwner())){
             return new Response("Отказано в доступе: Вы не владелец элемента.");
         }
         else {
-            dbmanager.removeByID(CollectionManager.getCollection().get(0).getId());
-            CollectionManager.getCollection().remove(0);
+            dbmanager.removeByID(CollectionManager.getCollectionForReading().get(0).getId());
+            CollectionManager.getCollectionForWriting().remove(0);
             return new Response("Первый элемент в коллекции удален.");
         }
     }
