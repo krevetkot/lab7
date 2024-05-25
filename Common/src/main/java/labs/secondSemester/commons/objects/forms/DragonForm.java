@@ -3,7 +3,6 @@ package labs.secondSemester.commons.objects.forms;
 import labs.secondSemester.commons.exceptions.FailedBuildingException;
 import labs.secondSemester.commons.exceptions.IllegalValueException;
 import labs.secondSemester.commons.managers.Console;
-import labs.secondSemester.commons.managers.IDManager;
 import labs.secondSemester.commons.managers.Validator;
 import labs.secondSemester.commons.objects.Coordinates;
 import labs.secondSemester.commons.objects.Dragon;

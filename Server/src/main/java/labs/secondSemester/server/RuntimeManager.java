@@ -18,10 +18,9 @@ public class RuntimeManager {
     /**
      * Обрабатывает полученную команду, чтобы вызвать ее выполнение.
      *
-     * @throws IllegalValueException - ошибка недопустимых данных, команду невозможно выполнить
      */
 
-    public Response commandProcessing(Command command, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws IllegalValueException, ArrayIndexOutOfBoundsException, NumberFormatException {
+    public Response commandProcessing(Command command, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws ArrayIndexOutOfBoundsException, NumberFormatException {
         String argument = command.getStringArgument();
         if (command.isArgs()) {
             try {

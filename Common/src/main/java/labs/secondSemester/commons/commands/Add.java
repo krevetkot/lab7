@@ -23,7 +23,7 @@ public class Add extends Command {
     }
 
     @Override
-    public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws IllegalValueException, SQLException, labs.secondSemester.commons.exceptions.AccessDeniedException {
+    public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws SQLException, labs.secondSemester.commons.exceptions.AccessDeniedException {
         Response response = new Response();
         Dragon buildedDragon = getObjectArgument();
         if (!CollectionManager.contains(buildedDragon)) {

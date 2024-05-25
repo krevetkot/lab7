@@ -20,7 +20,7 @@ public class Reorder extends Command {
     }
 
     @Override
-    public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws IllegalValueException, AccessDeniedException {
+    public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws AccessDeniedException {
         Collections.reverse(CollectionManager.getCollectionForReading());
         return new Response("Коллекция отсортирована в обратном порядке.");
     }

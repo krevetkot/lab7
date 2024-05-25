@@ -20,7 +20,7 @@ public class Info extends Command {
     }
 
     @Override
-    public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws IllegalValueException, AccessDeniedException {
+    public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws AccessDeniedException {
         if (CollectionManager.getCollectionForReading().isEmpty()) {
             return new Response("Коллекция пока что пуста. Тип коллекции: " + CollectionManager.getCollectionForReading().getClass());
         } else {

@@ -1,7 +1,6 @@
 package labs.secondSemester.server;
 
 import labs.secondSemester.commons.commands.Command;
-import labs.secondSemester.commons.exceptions.IllegalValueException;
 import labs.secondSemester.commons.managers.DatabaseManager;
 import labs.secondSemester.commons.network.Header;
 import labs.secondSemester.commons.network.Packet;
@@ -26,7 +25,6 @@ import java.util.concurrent.ForkJoinPool;
 
 public class ClientHandler implements Runnable{
     private final ForkJoinPool forkJoinPool = new ForkJoinPool();
-    private final int PORT = 2224;
     private final DatagramSocket datagramSocket;
     private final Serializer serializer;
     private final RuntimeManager runtimeManager;
@@ -54,10 +52,10 @@ public class ClientHandler implements Runnable{
 
         connectToBD();
 
-        logger.info(Thread.activeCount());
         while (true) {
             try {
                 byte[] buffer = new byte[BUFFER_LENGTH];
+                int PORT = 2224;
                 DatagramPacket datagramPacket = new DatagramPacket(buffer, buffer.length, datagramSocket.getInetAddress(), PORT);
                 Command command;
                 try {
@@ -69,22 +67,14 @@ public class ClientHandler implements Runnable{
                 Command finalCommand = command;
                 fixedPool.execute(() -> {
 
-                    Response response = new Response();
-                    try {
-                        logger.info("Выполнение запроса. " + Thread.currentThread().getName());
-                        response = runtimeManager.commandProcessing(finalCommand, false, null, databaseManager);
-                    } catch (IllegalValueException e) {
-                        response.add(e.getMessage());
-                    }
+                    Response response;
+                    logger.info("Выполнение запроса. " + Thread.currentThread().getName());
+                    response = runtimeManager.commandProcessing(finalCommand, false, null, databaseManager);
 
                     Response finalResponse = response;
                     forkJoinPool.execute(() -> {
-                        try {
-                            logger.info("Отправка ответа. " + Thread.currentThread().getName());
-                            sendResponse(finalResponse, datagramPacket.getSocketAddress());
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
+                        logger.info("Отправка ответа. " + Thread.currentThread().getName());
+                        sendResponse(finalResponse, datagramPacket.getSocketAddress());
                     });
                 });
 
@@ -114,7 +104,7 @@ public class ClientHandler implements Runnable{
         databaseManager.connect();
     }
 
-    public void sendResponse(Response response, SocketAddress address) throws IOException {
+    public void sendResponse(Response response, SocketAddress address) {
         try {
             Header header = new Header(0, 0);
             int headerLength = serializer.serialize(header).length + 200;
@@ -149,21 +139,21 @@ public class ClientHandler implements Runnable{
         logger.info("Запрос прочитан. "+ Thread.currentThread().getName());
         Packet packet = serializer.deserialize(buffer);
         Header header = packet.getHeader();
-        int countOfPieces = header.getCount();
+        int countOfPieces = header.count();
         ArrayList<Packet> list = new ArrayList<>(countOfPieces);
 
         for (int i = 0; i < countOfPieces; i++) {
             list.add(null);
         }
 
-        list.add(header.getNumber(), packet);
+        list.add(header.number(), packet);
         int k = 1;
 
         while (k<countOfPieces){
             datagramSocket.receive(datagramPacket);
             Packet newPacket = serializer.deserialize(buffer);
             Header newHeader = newPacket.getHeader();
-            list.add(newHeader.getNumber(), newPacket);
+            list.add(newHeader.number(), newPacket);
             k += 1;
         }
 

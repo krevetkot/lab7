@@ -1,22 +1,15 @@
 package labs.secondSemester.commons.managers;
 
-import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
-import jakarta.xml.bind.Marshaller;
-import jakarta.xml.bind.Unmarshaller;
 import labs.secondSemester.commons.exceptions.AccessDeniedException;
 import labs.secondSemester.commons.exceptions.FailedBuildingException;
 import labs.secondSemester.commons.objects.Dragon;
-import labs.secondSemester.commons.objects.forms.DragonsForParsing;
 import lombok.Setter;
 
 import java.io.*;
-import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.stream.Collectors;
 
 /**
  * Класс, управляющий коллекцией элементов типа {@link Dragon}.

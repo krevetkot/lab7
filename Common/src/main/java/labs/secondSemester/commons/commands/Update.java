@@ -23,7 +23,7 @@ public class Update extends Command {
     }
 
     @Override
-    public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws IllegalValueException, NumberFormatException, NoSuchElementException, SQLException, labs.secondSemester.commons.exceptions.AccessDeniedException {
+    public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws NumberFormatException, NoSuchElementException, SQLException, labs.secondSemester.commons.exceptions.AccessDeniedException {
         Response response = new Response();
         if (CollectionManager.getCollectionForReading().isEmpty()) {
             throw new NoSuchElementException("Коллекция пока что пуста");

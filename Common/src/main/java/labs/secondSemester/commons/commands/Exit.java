@@ -17,7 +17,7 @@ public class Exit extends Command {
     }
 
     @Override
-    public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws IllegalValueException {
+    public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) {
         System.out.println("До свидания! Приходите еще.");
         System.exit(0);
         return null;

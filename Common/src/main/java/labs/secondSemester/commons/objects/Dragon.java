@@ -6,7 +6,6 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import labs.secondSemester.commons.managers.DateAdapter;
-import labs.secondSemester.commons.managers.IDManager;
 import lombok.Getter;
 import lombok.Setter;
 

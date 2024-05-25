@@ -23,7 +23,7 @@ public class RemoveByID extends Command {
     }
 
     @Override
-    public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws IllegalValueException, NoSuchElementException, NumberFormatException, SQLException, AccessDeniedException {
+    public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws NoSuchElementException, NumberFormatException, SQLException, AccessDeniedException {
         if (CollectionManager.getCollectionForReading().isEmpty()) {
             throw new NoSuchElementException("Коллекция пока что пуста");
         }

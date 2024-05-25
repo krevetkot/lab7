@@ -21,7 +21,7 @@ public class FilterLessThanKiller extends Command {
     }
 
     @Override
-    public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws IllegalValueException, NumberFormatException, NoSuchElementException, AccessDeniedException {
+    public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws NumberFormatException, NoSuchElementException, AccessDeniedException {
         if (CollectionManager.getCollectionForReading().isEmpty()) {
             return new Response("Коллекция пуста.");
         } else {

@@ -14,7 +14,7 @@ public class SignUp extends Command{
     }
 
     @Override
-    public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws IllegalValueException, SQLException {
+    public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws SQLException {
         if (dbmanager.findUser(getClientID().getLogin())!=-1){
             return new Response("Такой пользователь уже существует. Воспользуйтесь командой login.");
         }

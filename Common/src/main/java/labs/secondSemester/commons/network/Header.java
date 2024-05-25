@@ -4,13 +4,10 @@ import lombok.Getter;
 
 import java.io.Serializable;
 
+/**
+ * @param count  количество всех блоков
+ * @param number порядковый номер этого блока
+ */
 @Getter
-public class Header implements Serializable {
-    private int count; //количество всех блоков
-    private int number; //порядковый номер этого блока
-
-    public Header(int count, int number){
-        this.count = count;
-        this.number = number;
-    }
+public record Header(int count, int number) implements Serializable {
 }

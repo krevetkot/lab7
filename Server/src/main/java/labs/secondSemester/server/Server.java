@@ -17,10 +17,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class Server {
-    private final int PORT = 2224;
     private final DatagramSocket datagramSocket;
-    private final Serializer serializer;
-    private final RuntimeManager runtimeManager;
     private final int BUFFER_LENGTH = 1000;
     private DatabaseManager databaseManager;
     private final String fileWithCredentials;
@@ -30,9 +27,8 @@ public class Server {
 
     public Server(String fileWithCredentials) throws SocketException {
         this.fileWithCredentials = fileWithCredentials;
+        int PORT = 2224;
         datagramSocket = new DatagramSocket(PORT);
-        serializer = new Serializer();
-        runtimeManager = new RuntimeManager();
         executorService = Executors.newFixedThreadPool(4);
     }
 
@@ -55,7 +51,6 @@ public class Server {
         final int COUNT_OF_CLIENTS = 5;
         for (int i = 0; i < COUNT_OF_CLIENTS; i++) {
             executorService.submit(new ClientHandler(datagramSocket, databaseManager, fileWithCredentials));
-            logger.info(Thread.activeCount());
         }
 
 

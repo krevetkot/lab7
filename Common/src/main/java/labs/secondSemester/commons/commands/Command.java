@@ -58,5 +58,5 @@ public abstract class Command implements Serializable {
      * @return response
      * @throws IllegalValueException - при недопустимом аргументе
      */
-    public abstract Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws IllegalValueException, SQLException, AccessDeniedException;
+    public abstract Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws SQLException, AccessDeniedException;
 }

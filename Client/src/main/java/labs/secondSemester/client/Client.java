@@ -231,9 +231,9 @@ public class Client {
             }
             Packet packet = serializer.deserialize(buffer.array());
             Header header = packet.getHeader();
-            int countOfPieces = header.getCount();
+            int countOfPieces = header.count();
             ArrayList<Packet> list = new ArrayList<>(3);
-            list.add(header.getNumber(), packet);
+            list.add(header.number(), packet);
             list.add(1, null);
             int k = 1;
 
@@ -244,7 +244,7 @@ public class Client {
                 datagramChannel.receive(buffer);
                 Packet newPacket = serializer.deserialize(buffer.array());
                 Header newHeader = newPacket.getHeader();
-                list.add(newHeader.getNumber(), newPacket);
+                list.add(newHeader.number(), newPacket);
                 k += 1;
             }
 

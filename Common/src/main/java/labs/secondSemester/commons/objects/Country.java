@@ -12,5 +12,5 @@ public enum Country implements Serializable {
     VATICAN,
     ITALY,
     THAILAND,
-    SOUTH_KOREA;
+    SOUTH_KOREA
 }

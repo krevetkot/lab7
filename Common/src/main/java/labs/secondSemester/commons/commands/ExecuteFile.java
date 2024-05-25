@@ -19,7 +19,7 @@ public class ExecuteFile extends Command {
 
 
     @Override
-    public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws IllegalValueException {
+    public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) {
         return null;
     }
 

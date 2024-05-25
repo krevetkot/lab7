@@ -22,7 +22,7 @@ public class PrintFieldDescendingAge extends Command {
     }
 
     @Override
-    public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws IllegalValueException, AccessDeniedException {
+    public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws AccessDeniedException {
         if (CollectionManager.getCollectionForReading().isEmpty()) {
             return new Response("Коллекция пуста.");
         } else {

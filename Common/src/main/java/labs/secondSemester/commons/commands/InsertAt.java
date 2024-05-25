@@ -24,7 +24,7 @@ public class InsertAt extends Command {
 
     @Override
     public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager)
-            throws NoSuchElementException, NumberFormatException, IllegalValueException, labs.secondSemester.commons.exceptions.AccessDeniedException {
+            throws NoSuchElementException, NumberFormatException, labs.secondSemester.commons.exceptions.AccessDeniedException {
 
         if (CollectionManager.getCollectionForReading().isEmpty()) {
             throw new NoSuchElementException("Коллекция пока что пуста");

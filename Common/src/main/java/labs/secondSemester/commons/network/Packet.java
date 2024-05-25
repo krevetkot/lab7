@@ -1,6 +1,5 @@
 package labs.secondSemester.commons.network;
 
-import labs.secondSemester.commons.commands.Command;
 import lombok.Getter;
 import lombok.Setter;
 

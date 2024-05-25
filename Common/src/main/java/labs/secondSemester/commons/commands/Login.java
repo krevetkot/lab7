@@ -14,7 +14,7 @@ public class Login extends Command{
     }
 
     @Override
-    public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws IllegalValueException, SQLException {
+    public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) {
         Response response = new Response();
         try {
             if (dbmanager.checkPassword(getClientID())){

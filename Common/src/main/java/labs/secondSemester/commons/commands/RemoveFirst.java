@@ -21,7 +21,7 @@ public class RemoveFirst extends Command {
     }
 
     @Override
-    public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws IllegalValueException, SQLException, AccessDeniedException {
+    public Response execute(String argument, boolean fileMode, Scanner scanner, DatabaseManager dbmanager) throws SQLException, AccessDeniedException {
         if (CollectionManager.getCollectionForReading().isEmpty()) {
             return new Response("Коллекция пуста.");
         }
