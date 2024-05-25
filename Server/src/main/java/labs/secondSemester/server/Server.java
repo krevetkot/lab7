@@ -22,6 +22,7 @@ public class Server {
     private DatabaseManager databaseManager;
     private final String fileWithCredentials;
     private final ExecutorService executorService;
+    final int COUNT_OF_CLIENTS = 10;
 
     private static final Logger logger = LogManager.getLogger(Server.class);
 
@@ -29,7 +30,7 @@ public class Server {
         this.fileWithCredentials = fileWithCredentials;
         int PORT = 2224;
         datagramSocket = new DatagramSocket(PORT);
-        executorService = Executors.newFixedThreadPool(4);
+        executorService = Executors.newFixedThreadPool(COUNT_OF_CLIENTS);
     }
 
     public void start() {
@@ -48,11 +49,11 @@ public class Server {
         }
 
 
-        final int COUNT_OF_CLIENTS = 5;
+
         for (int i = 0; i < COUNT_OF_CLIENTS; i++) {
             executorService.submit(new ClientHandler(datagramSocket, databaseManager, fileWithCredentials));
+            logger.info(Thread.activeCount());
         }
-
 
 //        databaseManager.closeConnection();
     }
