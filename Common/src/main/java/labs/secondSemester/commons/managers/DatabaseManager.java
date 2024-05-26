@@ -18,7 +18,6 @@ import java.util.Collections;
 import static java.sql.Types.INTEGER;
 
 public class DatabaseManager {
-    //    private String URL = "jdbc:postgresql://pg:5432/studs";
     private final String URL;
     private final String user;
     private final String password;
@@ -26,13 +25,13 @@ public class DatabaseManager {
     private Connection connection;
     private static final Logger logger = LogManager.getLogger(DatabaseManager.class);
 
-    public DatabaseManager(String user, String password, String URL) {
+    public DatabaseManager(String user, String password, String URL){
         this.user = user;
         this.password = password;
         this.URL = URL;
     }
 
-    public void connect() {
+    public void connect(){
         try {
             connection = DriverManager.getConnection(URL, user, password);
             logger.info("Соединение с базой данных установлено.");
@@ -42,21 +41,22 @@ public class DatabaseManager {
         }
     }
 
-    public Response reconnect(Response response, int countOfTries) {
+    public Response reconnect(Response response, int countOfTries){
         response.add("Попытка переподключения к БД " + countOfTries);
         connect();
-        if (countOfTries == 3) {
+        if (countOfTries==3){
             response.add("База данных умерла (прямо как я). Попробуйте позже.");
             return response;
         }
-        if (!isNotConnected()) {
+        if (!isNotConnected()){
             return null;
-        } else {
+        }
+        else {
             return reconnect(response, countOfTries + 1);
         }
     }
 
-    public boolean isNotConnected() {
+    public boolean isNotConnected(){
         try {
             return connection.isClosed();
         } catch (SQLException e) {
@@ -65,7 +65,7 @@ public class DatabaseManager {
         }
     }
 
-    public void closeConnection() {
+    public void closeConnection(){
         try {
             connection.close();
         } catch (SQLException e) {
@@ -81,7 +81,7 @@ public class DatabaseManager {
                 "join users on (dragon.owner = users.user_id);";
         PreparedStatement joinStatement = connection.prepareStatement(join);
         ResultSet result = joinStatement.executeQuery();
-        while (result.next()) {
+        while (result.next()){
             Dragon newDragon = parse(result);
             collection.add(newDragon);
         }
@@ -90,17 +90,18 @@ public class DatabaseManager {
     }
 
     public void saveCollection() throws SQLException, AccessDeniedException, ConnectionException {
-        for (Dragon dragon : CollectionManager.getCollection()) {
+        for (Dragon dragon: CollectionManager.getCollection()){
             updateOrAddDragon(dragon, new ClientIdentification("Kseniya", "12345"), false, -1);
         }
     }
 
     public int updateOrAddCoordinates(Coordinates coords, boolean existence, int id) throws SQLException {
         PreparedStatement statement;
-        if (existence) {
+        if (existence){
             statement = connection.prepareStatement("update coordinates set(x, y)=(?, ?) where coordinates_id=? returning coordinates_id;");
             statement.setInt(3, id);
-        } else {
+        }
+        else {
             statement = connection.prepareStatement("insert into coordinates(x, y) values (?, ?) returning coordinates_id;");
         }
 
@@ -113,10 +114,11 @@ public class DatabaseManager {
 
     public int updateOrAddPerson(Person person, boolean existence, int id) throws SQLException {
         PreparedStatement statement;
-        if (existence) {
+        if (existence){
             statement = connection.prepareStatement("update coordinates set(person_name, passport_id, eye_color, hair_color, nationality, countKilledDragons)=(?, ?, ?, ?, ?, ?) where person_id=? returning coordinates_id;");
             statement.setInt(7, id);
-        } else {
+        }
+        else {
             statement = connection.prepareStatement("insert into person (person_name, passport_id, eye_color, hair_color, nationality, countKilledDragons) values (?, ?, ?, ?, ?, ?) returning person_id;");
         }
         statement.setString(1, person.getName());
@@ -135,8 +137,8 @@ public class DatabaseManager {
         //реальное id указывается только если existence=true; иначе -1
 
         int userID = findUser(clientID.getLogin());
-        if (userID == -1) {
-            if (isNotConnected()) {
+        if (userID==-1){
+            if (isNotConnected()){
                 throw new ConnectionException("Проблемы с подключением к БД.");
             } else {
                 throw new AccessDeniedException("Отказано в доступе.");
@@ -146,7 +148,7 @@ public class DatabaseManager {
         PreparedStatement statement;
         int coordsID;
         int personID;
-        if (existence) {
+        if (existence){
 
             statement = connection.prepareStatement("update dragon set(dragon_name, coordinates, creation_date, age, weight, speaking, type, killer, owner)=(?, ?, ?, ?, ?, ?, ?, ?, ?) where dragon_id=? returning dragon_id;");
             statement.setInt(10, id);
@@ -157,18 +159,19 @@ public class DatabaseManager {
             res.next();
             coordsID = updateOrAddCoordinates(dragon.getCoordinates(), true, res.getInt("coordinates"));
 
-            if (dragon.getKiller() != null) {
+            if (dragon.getKiller()!=null){
                 personID = updateOrAddPerson(dragon.getKiller(), true, res.getInt("killer"));
                 statement.setInt(8, personID);
             } else {
                 statement.setNull(8, INTEGER);
             }
-        } else {
+        }
+        else {
             statement = connection.prepareStatement("insert into dragon (dragon_name, coordinates, creation_date, age, weight, speaking, type, killer, owner) values (?, ?, ?, ?, ?, ?, ?, ?, ?) returning dragon_id;");
 
             coordsID = updateOrAddCoordinates(dragon.getCoordinates(), false, -1);
 
-            if (dragon.getKiller() != null) {
+            if (dragon.getKiller()!=null){
                 personID = updateOrAddPerson(dragon.getKiller(), false, -1);
                 statement.setInt(8, personID);
             } else {
@@ -187,7 +190,7 @@ public class DatabaseManager {
 
         ResultSet res = statement.executeQuery();
         res.next();
-        if (existence) {
+        if (existence){
             logger.info("Элемент c id = " + id + " обновлен.");
         } else {
             logger.info("Элемент успешно добавлен в базу данных.");
@@ -196,7 +199,7 @@ public class DatabaseManager {
     }
 
     public void addUser(ClientIdentification clientID) throws SQLException, ConnectionException {
-        if (isNotConnected()) {
+        if (isNotConnected()){
             throw new ConnectionException("Проблемы с подключением к БД.");
         }
         PreparedStatement addStatement = connection.prepareStatement("insert into users(login, password) values (?, ?) returning user_id;");
@@ -204,14 +207,15 @@ public class DatabaseManager {
         addStatement.setString(2, clientID.getPassword());
         ResultSet res = addStatement.executeQuery();
         res.next();
+//        return res.getInt("user_id");
     }
 
-    public int findUser(String login) {
+    public int findUser(String login){
         try {
             PreparedStatement ps = connection.prepareStatement("select * from users where (users.login =?);");
             ps.setString(1, login);
             ResultSet res = ps.executeQuery();
-            if (res.next()) {
+            if (res.next()){
                 return res.getInt("user_id");
             }
         } catch (SQLException e) {
@@ -221,15 +225,15 @@ public class DatabaseManager {
     }
 
     public boolean checkPassword(ClientIdentification clientID) throws ConnectionException {
-        if (isNotConnected()) {
+        if (isNotConnected()){
             throw new ConnectionException("Проблемы с подключением к БД.");
         }
         try {
-            PreparedStatement ps = connection.prepareStatement("select password from users where (users.login =?);");
-            ps.setString(1, clientID.getLogin());
-            ResultSet res = ps.executeQuery();
-            res.next();
-            return clientID.getPassword().equals(res.getString("password"));
+        PreparedStatement ps = connection.prepareStatement("select password from users where (users.login =?);");
+        ps.setString(1, clientID.getLogin());
+        ResultSet res = ps.executeQuery();
+        res.next();
+        return clientID.getPassword().equals(res.getString("password"));
         } catch (SQLException e) {
             logger.error(e.getMessage());
             return false;
@@ -244,7 +248,7 @@ public class DatabaseManager {
         long weight = result.getLong("weight");
         boolean speaking = result.getBoolean("speaking");
         DragonType type = null;
-        if (!result.getString("type").equals("null")) {
+        if (!result.getString("type").equals("null")){
             type = DragonType.valueOf(result.getString("type"));
         }
 
@@ -252,7 +256,7 @@ public class DatabaseManager {
         float y = result.getFloat("y");
 
         Person person = null;
-        if (!(result.getString("killer") == null)) {
+        if (!(result.getString("killer")==null)){
             String personName = result.getString("person_name");
             String passportId = result.getString("passport_id");
             Color eyeColor = Color.valueOf(result.getString("eye_color"));
@@ -273,7 +277,7 @@ public class DatabaseManager {
     }
 
     public void removeByID(int id) throws SQLException, ConnectionException {
-        if (isNotConnected()) {
+        if (isNotConnected()){
             throw new ConnectionException("Проблемы с подключением к БД.");
         }
         PreparedStatement deleteStatement = connection.prepareStatement("delete from dragon where (dragon_id=?);");

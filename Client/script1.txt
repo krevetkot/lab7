@@ -1,9 +1,9 @@
 add
-Doge
+Sasha
 1
-156
+6789
 10
-23
-false
-AIR
+234
+true
+FIRE
 false

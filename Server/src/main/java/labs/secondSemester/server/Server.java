@@ -3,7 +3,6 @@ package labs.secondSemester.server;
 import labs.secondSemester.commons.exceptions.FailedBuildingException;
 import labs.secondSemester.commons.managers.CollectionManager;
 import labs.secondSemester.commons.managers.DatabaseManager;
-import labs.secondSemester.commons.network.Serializer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -12,9 +11,11 @@ import java.io.FileNotFoundException;
 import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ForkJoinPool;
 
 public class Server {
     private final DatagramSocket datagramSocket;
@@ -49,13 +50,25 @@ public class Server {
         }
 
 
+        ArrayList<ClientHandler> CHList = new ArrayList<>(COUNT_OF_CLIENTS);
 
+        ExecutorService fixedPool = Executors.newFixedThreadPool(10);
+        ForkJoinPool forkJoinPool = new ForkJoinPool();
         for (int i = 0; i < COUNT_OF_CLIENTS; i++) {
-            executorService.submit(new ClientHandler(datagramSocket, databaseManager, fileWithCredentials));
-            logger.info(Thread.activeCount());
+            CHList.add(new ClientHandler(datagramSocket, databaseManager, fileWithCredentials, fixedPool, forkJoinPool));
+            executorService.submit(CHList.get(i));
         }
 
-//        databaseManager.closeConnection();
+
+        Thread closingThreads = new Thread(() ->
+        {
+            for (ClientHandler client: CHList){
+                client.shutDown();
+            }
+            System.out.println("Все потоки закрыты (сработал shutDownHook)");
+        });
+
+        Runtime.getRuntime().addShutdownHook(closingThreads);
     }
 
     public void connectToBD(){

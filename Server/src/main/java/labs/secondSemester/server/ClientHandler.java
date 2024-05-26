@@ -24,15 +24,16 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 
 public class ClientHandler implements Runnable{
-    private final ForkJoinPool forkJoinPool = new ForkJoinPool();
+
     private final DatagramSocket datagramSocket;
     private final Serializer serializer;
     private final RuntimeManager runtimeManager;
     private final int BUFFER_LENGTH = 10240;
-    private final ExecutorService fixedPool = Executors.newFixedThreadPool(10);
     private DatabaseManager databaseManager;
     private static final Logger logger = LogManager.getLogger(ClientHandler.class);
     private final String fileWithCredentials;
+    private final ExecutorService fixedPool;
+    private final ForkJoinPool forkJoinPool;
 
 
     {
@@ -40,15 +41,22 @@ public class ClientHandler implements Runnable{
         runtimeManager = new RuntimeManager();
     }
 
-    public ClientHandler(DatagramSocket socket, DatabaseManager dbmanager, String fileWithCredentials){
+    public ClientHandler(DatagramSocket socket, DatabaseManager dbmanager, String fileWithCredentials, ExecutorService fixedPool, ForkJoinPool forkJoinPool){
         datagramSocket = socket;
         databaseManager = dbmanager;
         this.fileWithCredentials = fileWithCredentials;
+        this.fixedPool = fixedPool;
+        this.forkJoinPool = forkJoinPool;
+    }
+
+    public void shutDown(){
+        databaseManager.closeConnection();
+        fixedPool.shutdown();
+        forkJoinPool.shutdown();
     }
 
     @Override
     public void run() {
-
 
         connectToBD();
 
@@ -139,21 +147,21 @@ public class ClientHandler implements Runnable{
         logger.info("Запрос прочитан. "+ Thread.currentThread().getName());
         Packet packet = serializer.deserialize(buffer);
         Header header = packet.getHeader();
-        int countOfPieces = header.count();
+        int countOfPieces = header.getCount();
         ArrayList<Packet> list = new ArrayList<>(countOfPieces);
 
         for (int i = 0; i < countOfPieces; i++) {
             list.add(null);
         }
 
-        list.add(header.number(), packet);
+        list.add(header.getNumber(), packet);
         int k = 1;
 
         while (k<countOfPieces){
             datagramSocket.receive(datagramPacket);
             Packet newPacket = serializer.deserialize(buffer);
             Header newHeader = newPacket.getHeader();
-            list.add(newHeader.number(), newPacket);
+            list.add(newHeader.getNumber(), newPacket);
             k += 1;
         }
 

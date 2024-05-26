@@ -1,13 +1,14 @@
 package labs.secondSemester.commons.network;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.io.Serializable;
 
-/**
- * @param count  количество всех блоков
- * @param number порядковый номер этого блока
- */
+@Getter
+@AllArgsConstructor
+public class Header implements Serializable {
+    private final int count;
+    private final int number;
 
-public record Header(int count, int number) implements Serializable {
 }

@@ -219,7 +219,7 @@ public class Client {
             SocketAddress address = null;
             int time = 1;
             int tries = 1;
-            int period = 500000;
+            int period = 50000000;
             while (!serverAddress.equals(address)) {
                 if (time % period == 0) {
                     connectServer(tries);
@@ -231,9 +231,9 @@ public class Client {
             }
             Packet packet = serializer.deserialize(buffer.array());
             Header header = packet.getHeader();
-            int countOfPieces = header.count();
+            int countOfPieces = header.getCount();
             ArrayList<Packet> list = new ArrayList<>(3);
-            list.add(header.number(), packet);
+            list.add(header.getNumber(), packet);
             list.add(1, null);
             int k = 1;
 
@@ -244,7 +244,7 @@ public class Client {
                 datagramChannel.receive(buffer);
                 Packet newPacket = serializer.deserialize(buffer.array());
                 Header newHeader = newPacket.getHeader();
-                list.add(newHeader.number(), newPacket);
+                list.add(newHeader.getNumber(), newPacket);
                 k += 1;
             }
 
